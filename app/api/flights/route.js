@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSearchParams } from "@/utils/query";
+import { addLayoverInfo } from "@/utils/flightUtils";
 
 export async function GET(request) {
   const { origin, destination, date, returnDate } = getSearchParams(request);
@@ -36,12 +37,15 @@ export async function GET(request) {
 
   try {
     // from origin to destination on the specified date
-    const flightThere = await callAfs(origin, destination, date);
+    const flightThereTemp = await callAfs(origin, destination, date);
+    const flightThere = { results: flightThereTemp.results.map(addLayoverInfo) }; // add the layer info for U3
+    // flightThereTemp.results is flight groups returned by AFS API.
 
     // if returnDate exists then swap origin and destination
     let flightBack = null;
     if (returnDate) {
-        flightBack = await callAfs(destination, origin, returnDate);
+        const flightBackTemp = await callAfs(destination, origin, returnDate);
+        flightBack = { results: flightBackTemp.results.map(addLayoverInfo) }; // add the layer info for U3
     }
 
     return NextResponse.json({ flightThere, flightBack }, { status: 200 });
