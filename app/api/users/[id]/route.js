@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/db";
+import { withAuth } from "@/middlewares/withAuth";
 
 // Note: similar to exercise 4
 
-export async function PUT(request, { params }) {
-    const { id } = params; 
+export async function updateProfile(request) {
+    const urlParts = request.nextUrl.pathname.split("/");
+    const id = parseInt(urlParts[urlParts.length - 1]);
+
     const { firstName, lastName, phoneNumber, profilePicture } = await request.json();
 
     try {
@@ -39,3 +42,5 @@ export async function PUT(request, { params }) {
 
     
 }
+
+export const PUT = withAuth(updateProfile);  // export the handler wrapped with the middleware
