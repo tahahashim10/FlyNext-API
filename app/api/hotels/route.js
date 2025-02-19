@@ -13,6 +13,9 @@ export async function GET(request) {
     if (new Date(checkIn) >= new Date(checkOut)) {
         return NextResponse.json({ error: "Invalid check-in/check-out dates" }, { status: 400 });
     }
+
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
   
 
     // From Exercise 4
@@ -34,6 +37,12 @@ export async function GET(request) {
                         where: { 
                             availableRooms: { gt: 0 }, // gt: 0 => greater than 0
                             pricePerNight: { gte: Number(minPrice), lte: Number(maxPrice) }, // gte is >=, lte is <=
+                            bookings: { // only include rooms that dont have overlapping bookings
+                                none: {
+                                    checkIn: { lt: checkOutDate },
+                                    checkOut: { gt: checkInDate },
+                                }
+                            }
                         }, 
                         orderBy: { pricePerNight: "asc" }, // need to order by b/c we need "starting price" later
                     },
@@ -44,7 +53,16 @@ export async function GET(request) {
                 where: whereClause,
                 include: {
                     rooms: {
-                        where: { availableRooms: { gt: 0 } }, // gt: 0 => greater than 0
+                        where: { 
+                            availableRooms: { gt: 0 },
+                            bookings: { // only include rooms that dont have overlapping bookings
+                                none: {
+                                    checkIn: { lt: checkOutDate },
+                                    checkOut: { gt: checkInDate },
+                                }
+                            } 
+                        
+                        }, // gt: 0 => greater than 0
                         orderBy: { pricePerNight: "asc" }, // need to order by b/c we need "starting price" later
                     },
                 },
