@@ -14,7 +14,7 @@ export async function POST(request) {
   try {
     
     
-    if (!email || !password || typeof username !== "string" || typeof password !== "string") {
+    if (!email || !password || typeof(email) !== "string" || typeof(password) !== "string") {
         return NextResponse.json({ error: "Missing email or password" }, { status: 400 });
     }
     
