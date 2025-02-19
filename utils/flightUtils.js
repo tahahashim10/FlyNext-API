@@ -4,8 +4,8 @@ export function addLayoverInfo(flightGroup) {
       const firstLeg = flightGroup.flights[0];
       const secondLeg = flightGroup.flights[1];
       
-      const layover =
-        (new Date(secondLeg.departureTime) - new Date(firstLeg.arrivalTime)) / (1000 * 60);
+      // / (1000 * 60) is to convert from milliseconds to minutes
+      const layover = (new Date(secondLeg.departureTime) - new Date(firstLeg.arrivalTime)) / (1000 * 60);
       return { ...flightGroup, layover }; // include all flight info as well as layover info 
     }
     return flightGroup;
