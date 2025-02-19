@@ -6,18 +6,18 @@ import { hashPassword } from "@/utils/auth";
 
 export async function POST(request) {
     try {
-        const { username, password, role } = await request.json();
+        const { firstName, lastName, email, password, phoneNumber, profilePicture, role } = await request.json();
 
-        if (!username || !password) {
+        if (!firstName || !lastName || !email || !password) {
             return NextResponse.json({ error: "Username and password are required" }, { status: 400 });
         }
 
         // Check if the user already exists
         const existingUser = await prisma.user.findUnique({
-            where: { username },
+            where: { email },
         });
         if (existingUser) {
-            return NextResponse.json({ error: `${username} already exists` }, { status: 400 });
+            return NextResponse.json({ error: `User with email ${email} already exists` }, { status: 400 });
         }
 
         // Hash the password
@@ -26,9 +26,13 @@ export async function POST(request) {
         // Create the user
         const createdUser = await prisma.user.create({
             data: {
-                username,
+                firstName,
+                lastName,
+                email,
                 password: hashedPassword,
-                role: role || "USER", // default to "USER" if role is not provided
+                phoneNumber,
+                profilePicture,
+                role: role || "USER", 
             },
         });
 
@@ -37,7 +41,12 @@ export async function POST(request) {
             {
                 user: {
                     id: createdUser.id,
-                    username: createdUser.username,
+                    firstName: createdUser.firstName,
+                    lastName: createdUser.lastName,
+                    email: createdUser.email,
+                    phoneNumber: createdUser.phoneNumber,
+                    profilePicture: createdUser.profilePicture,
+                    role: createdUser.role,
                 },
             },
             { status: 201 }

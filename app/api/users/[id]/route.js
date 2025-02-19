@@ -4,7 +4,7 @@ import prisma from "@/utils/db";
 // Note: similar to exercise 4
 
 export async function PUT(request, { params }) {
-    const { id } = await params; 
+    const { id } = params; 
     const { firstName, lastName, phoneNumber, profilePicture } = await request.json();
 
     try {

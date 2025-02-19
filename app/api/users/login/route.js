@@ -13,9 +13,8 @@ export async function POST(request) {
 
   try {
     
-    
     if (!email || !password || typeof(email) !== "string" || typeof(password) !== "string") {
-        return NextResponse.json({ error: "Missing email or password" }, { status: 400 });
+        return NextResponse.json({ error: "Missing or invalid email or password" }, { status: 400 });
     }
     
     const user = await prisma.user.findUnique({ 
