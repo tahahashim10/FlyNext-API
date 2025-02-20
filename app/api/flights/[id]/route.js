@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { getSearchParams } from "@/utils/query";
-import { addLayoverInfo, minimalFlightInfo  } from "@/utils/flightUtils";
+import { addLayoverInfo, minimalFlightInfo } from "@/utils/flightUtils";
 
-export async function GET(request) {
-  const { origin, destination, date, returnDate } = getSearchParams(request);
+export async function GET(request, { params }) {
+  const { id } = params;
+  if (!id) {
+    return NextResponse.json({ error: "Flight ID required" }, { status: 400 });
+  }
 
+  const { origin, destination, date } = getSearchParams(request);
   if (!origin || !destination || !date) {
     return NextResponse.json({ error: "source, destination, and date are required" }, { status: 400 });
   }
@@ -34,31 +38,22 @@ export async function GET(request) {
     return res.json();
   }
 
-
   try {
-    // from origin to destination on the specified date
-    const flightThereTemp = await callAfs(origin, destination, date);
-    // first add layover info then reduce each flight group to minimal info
-    const flightThere = { results: flightThereTemp.results.map(addLayoverInfo).map(minimalFlightInfo), };
-    /* 
-      .map(addLayoverInfo) => First, it adds layover information to each flight group
-      .map(minimalFlightInfo) => Then, it reduces the flight group to minimal info
+    // specified date for flight
+    const flightData = await callAfs(origin, destination, date);
+    
+    // add layover info and flatten the groups to a single array of flights
+    const flightsList = flightData.results.map(addLayoverInfo).flatMap((group) => group.flights);
 
-      flightThereTemp.results is flight groups returned by AFS API.
-    */
-
-    // if returnDate exists then swap origin and destination
-    let flightBack = null;
-    if (returnDate) {
-        const flightBackTemp = await callAfs(destination, origin, returnDate);
-        flightBack = { results: flightBackTemp.results.map(addLayoverInfo).map(minimalFlightInfo), };
-        
+    // find flight with matching id
+    const matchingFlight = flightsList.find((flight) => flight.id === id);
+    if (!matchingFlight) {
+    return NextResponse.json({ error: "Flight not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ flightThere, flightBack }, { status: 200 });
-
+    return NextResponse.json(matchingFlight, { status: 200 });
   } catch (error) {
-    console.error("Error calling AFS API:", error);
+    console.error("Error retrieving flight details:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
