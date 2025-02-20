@@ -54,6 +54,7 @@ model Hotel {
   bookings  Booking[]   // 1:M
 }
 
+// Note: each room id represents a distinct room type, and the availableRooms field indicates how many rooms of that type are available
 model Room {
   id             Int   @id @default(autoincrement())
   hotelId        Int
