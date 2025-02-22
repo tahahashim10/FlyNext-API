@@ -3,7 +3,7 @@ import prisma from "@/utils/db";
 import { geocodeAddress } from "@/utils/geocode";
 
 export async function GET(request, { params }) {
-    const { id } = params;
+    const { id } = await params;
     if (!id) {
         return NextResponse.json({ error: "Hotel ID required" }, { status: 400 });
     }
@@ -39,7 +39,7 @@ export async function GET(request, { params }) {
             rooms: hotel.rooms.map((room) => ( // Note: each room id represents a distinct room type, and the availableRooms field indicates how many rooms of that type are available
                 {
                     id: room.id,
-                    name: room.name,
+                    type: room.name,
                     amenities: room.amenities,
                     pricePerNight: room.pricePerNight,
                     images: room.images,
