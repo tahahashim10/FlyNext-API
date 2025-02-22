@@ -40,7 +40,7 @@ export async function updateProfile(request) {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 
-    
+
 }
 
 export const PUT = withAuth(updateProfile);  // export the handler wrapped with the middleware
