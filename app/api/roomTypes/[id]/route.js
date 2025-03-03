@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/utils/db';
+import prisma from '@/utils/db';
 
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const room = await prisma.room.findUnique({
       where: { id: parseInt(id) },
     });
@@ -18,7 +18,7 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const { name, amenities, pricePerNight, images, availableRooms } = await request.json();
 
     // Check if the room exists
