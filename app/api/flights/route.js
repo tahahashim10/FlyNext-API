@@ -18,7 +18,7 @@ export async function GET(request) {
   }
 
 
-  // helper func to call the AFS API for flights (since we'll call it twice to hadle one-way and round-trips flights)
+  // helper func to call the AFS API for flights (since we'll call it twice to handle one-way and round-trips flights)
   async function callAfs(origin, destination, date) {
     const url = new URL("/api/flights", baseUrl);
     url.search = new URLSearchParams({ origin, destination, date }).toString();

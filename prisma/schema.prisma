@@ -108,3 +108,18 @@ model Notification {
 
   user      User @relation(fields: [userId], references: [id])
 }
+
+//  Your startup script must also fetch the list of cities and airports (not flights) from the AFS and save them into your database
+model City {
+  id      Int    @id @default(autoincrement())
+  city    String
+  country String
+}
+
+model Airport {
+  id      Int    @id @default(autoincrement())
+  code    String
+  name    String
+  city    String
+  country String
+}
