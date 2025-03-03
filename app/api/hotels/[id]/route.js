@@ -1,4 +1,4 @@
-// app/hotels/[id]/route.js
+// app/api/hotels/[id]/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/utils/db';
 
