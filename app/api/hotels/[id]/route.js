@@ -2,21 +2,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/utils/db';
 
-export async function GET(request, { params }) {
-  try {
-    const { id } = params;
-    const hotel = await prisma.hotel.findUnique({
-      where: { id: parseInt(id) },
-    });
-    if (!hotel) {
-      return NextResponse.json({ error: 'Hotel not found' }, { status: 404 });
-    }
-    return NextResponse.json(hotel, { status: 200 });
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
-
 export async function PUT(request, { params }) {
   try {
     const { id } = params;
