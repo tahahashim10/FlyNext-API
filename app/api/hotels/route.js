@@ -68,6 +68,10 @@ export async function GET(request) {
                 },
             });
         }
+
+        // remove hotels that have no rooms available based on the filtering
+        hotels = hotels.filter((hotel) => hotel.rooms.length > 0);
+
         
 
         // calculate starting price for each room if available
