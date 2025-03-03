@@ -1,34 +1,62 @@
 // app/bookings/route.js
 import { NextResponse } from 'next/server';
-import { prisma } from '@/utils/db';
+import prisma from '@/utils/db';
+
 
 export async function GET(request) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const hotelId = searchParams.get('hotelId');
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
-    const room = searchParams.get('room'); // partial filter for room type (i.e. room name)
+
+    const { searchParams } = request.nextUrl;
+    const ownerId = searchParams.get('ownerId');
+    if (!ownerId) {
+      return NextResponse.json({ error: "ownerId query parameter is required" }, { status: 400 });
+    }
+
+    // Check if the owner exists and has the HOTEL_OWNER role
+    const ownerUser = await prisma.user.findUnique({
+      where: { id: Number(ownerId) },
+    });
+    if (!ownerUser) {
+      return NextResponse.json({ error: `Owner with id ${ownerId} does not exist.` }, { status: 400 });
+    }
+    if (ownerUser.role !== 'HOTEL_OWNER') {
+      return NextResponse.json({ error: `User with id ${ownerId} is not a hotel owner.` }, { status: 400 });
+    }
+
+    // Find all hotels owned by this user.
+    const ownerHotels = await prisma.hotel.findMany({
+      where: { ownerId: Number(ownerId) },
+      select: { id: true },
+    });
+    const ownerHotelIds = ownerHotels.map((hotel) => hotel.id);
+
+    // If no hotels found, return an empty list.
+    if (ownerHotelIds.length === 0) {
+      return NextResponse.json([], { status: 200 });
+    }
+
+    const startDate = searchParams.get('startDate'); 
+    const endDate = searchParams.get('endDate');       
+    const roomFilter = searchParams.get('room');       
 
     // Build filtering conditions for bookings.
-    const whereClause = {};
-    if (hotelId) {
-      whereClause.hotelId = parseInt(hotelId);
+    const whereClause = {
+      hotelId: { in: ownerHotelIds },
     }
-    // If filtering by dates, require non-null checkIn and checkOut.
     if (startDate) {
-      whereClause.checkIn = { gte: new Date(startDate) };
+      whereClause.checkOut = { gte: new Date(startDate) };
     }
     if (endDate) {
-      whereClause.checkOut = { lte: new Date(endDate) };
+      whereClause.checkIn = { lte: new Date(endDate) };
     }
-    // For filtering by room type, check that a related room exists and its name contains the filter.
-    if (room) {
+    
+    if (roomFilter) {
       whereClause.room = {
-        isNot: null,
-        name: { contains: room, mode: 'insensitive' },
+        name: {
+          contains: roomFilter
+        }
       };
-    }
+    }  
 
     const bookings = await prisma.booking.findMany({
       where: whereClause,
