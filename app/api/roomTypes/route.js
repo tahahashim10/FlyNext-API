@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/utils/db';
+import prisma from '@/utils/db';
 
 export async function POST(request) {
   try {
@@ -9,6 +9,17 @@ export async function POST(request) {
     if (!hotelId || !name || pricePerNight === undefined || availableRooms === undefined) {
       return NextResponse.json(
         { error: 'Missing required fields: hotelId, name, pricePerNight, or availableRooms' },
+        { status: 400 }
+      );
+    }
+
+    // Check if the hotel exists
+    const hotel = await prisma.hotel.findUnique({
+      where: { id: Number(hotelId) },
+    });
+    if (!hotel) {
+      return NextResponse.json(
+        { error: `Hotel with id ${hotelId} does not exist.` },
         { status: 400 }
       );
     }
