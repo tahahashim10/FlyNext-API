@@ -4,7 +4,7 @@ import { getSuggestedHotels, getSuggestedFlights } from "@/utils/suggestions";
 
 export async function POST(request) {
   try {
-    const { flightId, hotelId } = await request.json();
+    const { flightId, hotelId, destination, departureCity, suggestedDate } = await request.json();
 
     if (!flightId && !hotelId) {
       return NextResponse.json({ error: "Missing flightId or hotelId" }, { status: 400 });
@@ -13,21 +13,25 @@ export async function POST(request) {
     let suggestions = {};
 
     if (flightId) {
-      // Fetch flight details and get hotel suggestions
-      const flight = await prisma.flight.findUnique({ where: { id: flightId } });
-      if (!flight) return NextResponse.json({ error: "Flight not found" }, { status: 404 });
-
-      const hotels = await getSuggestedHotels(flight.destination);
+      if (!destination) {
+        return NextResponse.json(
+          { error: "For flight-based suggestions, please provide destination." },
+          { status: 400 }
+        );
+      }
+      const hotels = await getSuggestedHotels(destination);
       suggestions.hotels = hotels;
-      suggestions.searchUrl = `/search/hotels?city=${encodeURIComponent(flight.destination)}&keepOrder=true`;
+      suggestions.searchUrl = `/search/hotels?city=${encodeURIComponent(destination)}&keepOrder=true`;
     }
 
     if (hotelId) {
-      // Fetch hotel details and get flight suggestions
-      const hotel = await prisma.hotel.findUnique({ where: { id: hotelId } });
+      const hotel = await prisma.hotel.findUnique({ where: { id: Number(hotelId) } });
       if (!hotel) return NextResponse.json({ error: "Hotel not found" }, { status: 404 });
 
-      const flights = await getSuggestedFlights(hotel.location);
+      // Use the hotel's location for destination.
+      // Use the provided departureCity if given, otherwise default to "Toronto".
+      const origin = departureCity || "Toronto";
+      const flights = await getSuggestedFlights(hotel.location, origin, suggestedDate);
       suggestions.flights = flights;
       suggestions.searchUrl = `/search/flights?destination=${encodeURIComponent(hotel.location)}&keepOrder=true`;
     }
