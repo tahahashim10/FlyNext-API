@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/utils/db';
 
-// Instantiate Prisma client (consider using a singleton in production)
-const prisma = new PrismaClient();
 
 /**
  * GET /api/hotels/availiability?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&roomId=number
