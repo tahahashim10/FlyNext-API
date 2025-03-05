@@ -1,25 +1,19 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/db";
+import { verifyToken } from "@/utils/auth";
 
 // Retrieve notifications for a given user (can be used by both regular users and hotel owners)
 export async function GET(request) {
+
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-    if (!userId) {
-      return NextResponse.json({ error: "userId query parameter is required" }, { status: 400 });
-    }
-    
-    // Check if the user exists
-    const user = await prisma.user.findUnique({
-      where: { id: Number(userId) },
-    });
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
     
     const notifications = await prisma.notification.findMany({
-      where: { userId: Number(userId) },
+      where: { userId: tokenData.userId },
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(notifications, { status: 200 });
@@ -31,11 +25,18 @@ export async function GET(request) {
 
 // PATCH: Mark a notification as read
 export async function PATCH(request) {
+
+  // Verify the token
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const { notificationId, userId } = await request.json();
-    if (!notificationId || !userId) {
+    const { notificationId } = await request.json();
+    if (!notificationId) {
       return NextResponse.json(
-        { error: "notificationId and userId are required" },
+        { error: "notificationId is required" },
         { status: 400 }
       );
     }
@@ -49,7 +50,7 @@ export async function PATCH(request) {
     }
 
     // Verify the notification belongs to the provided userId
-    if (notification.userId !== Number(userId)) {
+    if (notification.userId !== tokenData.userId) {
       return NextResponse.json(
         { error: "Forbidden: You are not authorized to update this notification." },
         { status: 403 }

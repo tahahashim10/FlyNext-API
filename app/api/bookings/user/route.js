@@ -4,12 +4,6 @@ import { getUserBookings } from "@/utils/bookings";
 import { verifyToken } from '@/utils/auth';
 
 export async function GET(request) {
-
-  const tokenData = verifyToken(request);
-  if (!tokenData) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
@@ -107,9 +101,14 @@ export async function PATCH(request) {
 
 // for U15
 export async function POST(request) {
+  
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const {
-      userId,
       hotelId,    // Optional: for hotel reservation
       roomId,     // Optional: for hotel reservation
       checkIn,    // Optional: for hotel reservation
@@ -123,18 +122,8 @@ export async function POST(request) {
       passportNumber
     } = await request.json();
 
-    // Validate required field(s)
-    if (!userId) {
-      return NextResponse.json({ error: "userId is required" }, { status: 400 });
-    }
-
-    // Check if the user exists
-    const user = await prisma.user.findUnique({
-      where: { id: Number(userId) },
-    });
-    if (!user) {
-      return NextResponse.json({ error: `User with id ${userId} does not exist.` }, { status: 404 });
-    }
+    // The userId is taken from the token
+    const userId = tokenData.userId;
 
     let hotelBooking = null;
     let hotelRecord = null; // We'll use this to access hotel details for the notification.

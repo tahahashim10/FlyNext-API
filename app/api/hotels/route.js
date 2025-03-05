@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/db";
 import { getSearchParams } from "@/utils/query";
 import { geocodeAddress } from "@/utils/geocode";
+import { verifyToken } from "@/utils/auth";
 
 export async function GET(request) {
     const { checkIn, checkOut, city, name, starRating, minPrice, maxPrice } = getSearchParams(request);
@@ -114,32 +115,23 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+
+    // Verify that the user is authenticated
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const { ownerId, name, logo, address, location, starRating, images } = await request.json();
+    const { name, logo, address, location, starRating, images } = await request.json();
 
     // Validate required fields (ownerId, name, address, location, starRating are required)
-    if (!ownerId || !name || !address || !location || starRating === undefined) {
+    if (!name || !address || !location || starRating === undefined) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Check if the owner exists
-    const owner = await prisma.user.findUnique({
-      where: { id: ownerId },
-    });
-    if (!owner) {
-      return NextResponse.json(
-        { error: `Owner with id ${ownerId} not found. Please provide a valid owner id.` },
-        { status: 400 }
-      );
-    }
-
-    // Check that the user has the HOTEL_OWNER role
-    if (owner.role !== 'HOTEL_OWNER') {
-      return NextResponse.json(
-        { error: `User with id ${ownerId} is not a hotel owner.` },
-        { status: 400 }
-      );
-    }
+    // The authenticated user will become the owner of the hotel
+    const ownerId = tokenData.userId;
 
     // Create a new hotel, connecting the hotel with an existing owner using ownerId
     const hotel = await prisma.hotel.create({
