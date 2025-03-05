@@ -38,10 +38,18 @@ export async function POST(request, { params }) {
         const bookingsToCancel = confirmedBookings.slice(0, bookingsToCancelCount);
         canceledBookings = await Promise.all(
           bookingsToCancel.map(async (booking) => {
-            return prisma.booking.update({
+            const updatedBooking = await prisma.booking.update({
               where: { id: booking.id },
               data: { status: "CANCELED" },
             });
+            // U22: Notify the user about the cancellation due to reduced availability
+            await prisma.notification.create({
+              data: {
+                userId: updatedBooking.userId,
+                message: `Your booking for room ${room.name} has been canceled due to reduced availability.`,
+              },
+            });
+            return updatedBooking;
           })
         );
       }

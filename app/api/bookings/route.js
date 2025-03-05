@@ -95,12 +95,13 @@ export async function POST(request) {
     }
 
     let hotelBooking = null;
+    let hotelRecord = null; // We'll use this to access hotel details for the notification.
     if (hotelId && roomId) {
       // Check if the hotel exists
-      const hotelExists = await prisma.hotel.findUnique({
+      hotelRecord = await prisma.hotel.findUnique({
         where: { id: Number(hotelId) },
       });
-      if (!hotelExists) {
+      if (!hotelRecord) {
         return NextResponse.json(
           { error: `Hotel with id ${hotelId} does not exist.` },
           { status: 400 }
@@ -127,6 +128,23 @@ export async function POST(request) {
           status: status || 'CONFIRMED',
         },
       });
+
+      // U22: Add notifications 
+      // Notify the user about their booking confirmation.
+      await prisma.notification.create({
+        data: {
+          userId: Number(userId),
+          message: `Your booking at ${hotelRecord.name} has been confirmed. Check-in: ${checkIn || "N/A"}, Check-out: ${checkOut || "N/A"}.`,
+        },
+      });
+      // Notify the hotel owner about the new booking.
+      await prisma.notification.create({
+        data: {
+          userId: hotelRecord.ownerId,
+          message: `A new booking has been made at your hotel ${hotelRecord.name}.`,
+        },
+      });
+      // 
     }
 
     let flightBooking = null;
@@ -145,11 +163,19 @@ export async function POST(request) {
         passportNumber,
         flightIds,
       });
+
+      // Add a notification for the flight booking.
+      await prisma.notification.create({
+        data: {
+          userId: Number(userId),
+          message: `Your flight booking has been confirmed.`,
+        },
+      });
     }
 
     return NextResponse.json({ hotelBooking, flightBooking }, { status: 201 });
   } catch (error) {
-    console.error("Booking Error:", error);
+    console.error("Booking Error:", error.stack);
     return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 }

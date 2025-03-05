@@ -36,6 +36,15 @@ export async function POST(request, { params }) {
       where: { id: parseInt(id) },
       data: { status: 'CANCELED' },
     });
+
+    // U22: Notify the user about the cancellation by the hotel owner
+    await prisma.notification.create({
+      data: {
+        userId: updatedBooking.userId,
+        message: `Your booking at ${booking.hotel.name} has been canceled by the hotel owner.`,
+      },
+    });
+
     return NextResponse.json(updatedBooking, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

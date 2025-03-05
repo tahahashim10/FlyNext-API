@@ -40,6 +40,14 @@ export async function POST(request) {
       data: { status: "CONFIRMED" },
     });
 
+    // U22: Notify the user that their booking is now confirmed
+    await prisma.notification.create({
+      data: {
+        userId: booking.userId,
+        message: `Your booking at ${booking.hotel ? booking.hotel.name : 'your hotel'} has been confirmed.`,
+      },
+    });
+
     return NextResponse.json({
       message: "Booking confirmed",
       booking: updatedBooking,
