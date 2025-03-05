@@ -1,22 +1,16 @@
-// app/bookings/[id]/cancel/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/utils/db';
+import { verifyToken } from '@/utils/auth';
 
 export async function POST(request, { params }) {
+  // Verify token
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { id } = params;
-
-    // get the ownerId from the query parameters for now -
-    // TODO: change to call verifyToken and then verify id
-    const { searchParams } = request.nextUrl;
-    const ownerIdParam = searchParams.get('ownerId');
-    if (!ownerIdParam) {
-      return NextResponse.json({ error: "ownerId query parameter is required" }, { status: 400 });
-    }
-    const ownerIdNum = Number(ownerIdParam);
-    if (isNaN(ownerIdNum)) {
-      return NextResponse.json({ error: "Invalid ownerId value" }, { status: 400 });
-    }
 
     // Find the booking
     const booking = await prisma.booking.findUnique({
@@ -28,7 +22,7 @@ export async function POST(request, { params }) {
     }
 
     // check that the booking's hotel belongs to the provided owner.
-    if (!booking.hotel || booking.hotel.ownerId !== ownerIdNum) {
+    if (!booking.hotel || booking.hotel.ownerId !== tokenData.userId) {
       return NextResponse.json({ error: "Forbidden: This booking does not belong to your hotel" }, { status: 403 });
     }
     // Update status to "CANCELED"

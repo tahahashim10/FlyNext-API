@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import prisma from '@/utils/db';
 import { getUserBookings } from "@/utils/bookings";
+import { verifyToken } from '@/utils/auth';
 
 export async function GET(request) {
+
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
@@ -98,7 +105,6 @@ export async function PATCH(request) {
   }
 }
 
-// for U15
 // for U15
 export async function POST(request) {
   try {
