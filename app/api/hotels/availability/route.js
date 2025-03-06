@@ -1,12 +1,20 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/utils/db';
+import { verifyToken } from "@/utils/auth";
 
 
 /**
- * GET /api/hotels/availiability?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&roomId=number
+ * GET /api/hotels/availability?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&roomId=number
  * Returns room availability details (per room type) for the specified date range.
  */
 export async function GET(request) {
+
+  // Verify that the request is authenticated.
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');
@@ -43,6 +51,7 @@ export async function GET(request) {
     // Retrieve the room details using the provided roomId
     const room = await prisma.room.findUnique({
       where: { id: roomId },
+      include: { hotel: true }
     });
     if (!room) {
       return NextResponse.json(
@@ -51,11 +60,17 @@ export async function GET(request) {
       );
     }
 
+    // Ensure the authenticated user owns the hotel that this room belongs to.
+    if (room.hotel.ownerId !== tokenData.userId) {
+      return NextResponse.json({ error: "Forbidden: You do not own this hotel." }, { status: 403 });
+    }
+
     // Query bookings for the room that overlap with the given date range.
     // Overlap condition: booking checkIn is on or before the end date and booking checkOut is on or after the start date.
     const bookings = await prisma.booking.findMany({
       where: {
         roomId: roomId,
+        status: { not: 'CANCELED' },
         checkIn: { lte: end },
         checkOut: { gte: start },
       },

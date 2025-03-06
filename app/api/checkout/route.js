@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/utils/db';
 import { isValidCardNumber, isValidExpiry } from '@/utils/validation';
+import { verifyToken } from '@/utils/auth';
 
 export async function POST(request) {
+
+  // Verify token
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { bookingId, cardNumber, expiryMonth, expiryYear } = await request.json();
 
@@ -27,6 +35,11 @@ export async function POST(request) {
 
     if (!booking) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    // Check if the booking belongs to the authenticated user
+    if (booking.userId !== tokenData.userId) {
+      return NextResponse.json({ error: "Forbidden: You are not authorized to checkout this booking" }, { status: 403 });
     }
 
     // Check if the booking is already confirmed to avoid double processing.
