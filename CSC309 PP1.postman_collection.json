@@ -1,0 +1,1192 @@
+{
+	"info": {
+		"_postman_id": "f8e32742-e437-4b72-ba2e-d2502d6d64fc",
+		"name": "CSC309 PP1",
+		"description": "This collection provides RESTful JSON endpoints for managing accounts, hotels, flights, bookings, and notifications. All protected endpoints require a valid JWT (set in the Authorization header as Bearer {{token}}). The APIs support user registration/login, hotel and room management, flight search through the AFS system, booking operations (create, checkout, cancel), and notifications. Additionally, there are additional endpoints for the locally hosted lists of cities and airports for frontend use (to come later in PP2).\n\nBelow you will find all the user stories we implemented for PP1.\n\n### **Accounts**\n\n- **U1: As a user, I want to sign up, log in, log out, and edit my profile. Profile information includes first and last name, email, profile picture, and phone number. Authentication should be handled with a proper JWT setup.**\n    \n\n---\n\n### **Flights Search**\n\n- **U2: As a visitor, I want to search for flights by specifying a source, destination, and date(s). Source and destination could be either a city or an airport. I want to search for one-way or round-trip flights.**\n    \n- **U3: As a visitor, I want to view flight details, including departure/arrival times, duration, and layovers.**\n    \n\n_(The stories about auto-complete and date picker dropdowns are UI concerns and will be implemented in Part 2.)_\n\n---\n\n### **Hotel Management**\n\n- **U6: As a user, I want to add my hotel to the platform. A hotel has name, logo, address, location, star-rating, and several images.**\n    \n- **U7: As a hotel owner, I want to define room types, with each type having a name (e.g., twin, double, etc.), amenities, prices per night, and several images.**\n    \n- **U8: As a hotel owner, I want to view and filter my hotel’s booking list by date and/or room type.**\n    \n- **U9: As a hotel owner, I want to cancel a hotel reservation, so that I have flexibility in managing my hotel.**\n    \n- **U10: As a hotel owner, I want to view room availability (per room type) for specific date ranges to better understand occupancy trends.**\n    \n- **U11: As a hotel owner, I want to update the number of available rooms of each type in my hotel. If availability decreases, it may require canceling some existing reservations.**\n    \n\n---\n\n### **Hotel Search**\n\n- **U12: As a visitor, I want to search for hotels by check-in date, check-out date, and city. I also want to filter them by name, star-rating, and price range. Search results should display in a list that shows the hotel information, starting price, and a location pinpoint on a map. The results should only reflect available rooms.**\n    \n- **U13: As a visitor, I want to view detailed hotel information, including room types, amenities, and pricing.**\n    \n- **U14: As a visitor, I want to view the availability and details of different room types for my selected dates in a selected hotel.**\n    \n\n---\n\n### **Booking**\n\n- **U15: As a user, I want to book an itinerary that includes a flight (one-way or round-trip) and/or a hotel reservation.**\n    \n- **U16: As a user, I want to a checkout page that displays all details about my itinerary (flight and/or hotel), collects my credit card information, validates the card details, and finalizes the booking if everything is correct. Note that Validation means statically checking the validity of the card number and expiry date. The card should not (and cannot) be charged for real.**\n    \n- **U17: As a user, I want to see hotel suggestions for the city if I am flying to. I also want to see flight suggestions if I am about to book a hotel stay. Both suggestions must have a link to take me to the main hotel/flight search page with pre-filled inputs, while preserving my current, in progress order.**\n    \n- **U18: As a user, I want to receive an minimal, PDF invoice for my trip booking, so that I have a record of the booking and transaction.**\n    \n- **U19: As a user, I want to view my bookings, so that I can easily access my itinerary and booking information.**\n    \n- **U20: As a user, I want to cancel all or specific parts of a booking, giving me flexibility in managing my trips.**\n    \n- **U21: As a user, I want to verify my flight booking to ensure the flight schedule remains as planned.**\n    \n\n---\n\n### **Notifications**\n\n- **U22: As a user, I want to receive notifications when I book a new itinerary, and when there are external changes to my booking (e.g., cancellation by me or hotel owner).**\n    \n- **U23: As a hotel owner, I want to receive notifications when a new booking is made for my hotel.**\n    \n\nIn each subfolder of this Postman project, the requests are organized in the same order of user stories within each section. For example, in the Hotel Management section, the first request (POST hotels) corresponds to U6.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27865337"
+	},
+	"item": [
+		{
+			"name": "Accounts",
+			"item": [
+				{
+					"name": "users/register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"firstName\": \"John\",\r\n  \"lastName\": \"Doe\",\r\n  \"email\": \"john@example.com\",\r\n  \"password\": \"password123\",\r\n  \"phoneNumber\": \"1234567890\",\r\n  \"profilePicture\": \"http://example.com/profile.jpg\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/users/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"users",
+								"register"
+							]
+						},
+						"description": "Registers a new user with profile details."
+					},
+					"response": []
+				},
+				{
+					"name": "users/login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"if (response.accessToken) {\r",
+									"  pm.collectionVariables.set(\"token\", response.accessToken);\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"john@example.com\",\r\n  \"password\": \"password123\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/users/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"users",
+								"login"
+							]
+						},
+						"description": "Logs in a user and returns a JWT token."
+					},
+					"response": []
+				},
+				{
+					"name": "users/[id]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"firstName\": \"Jane\",\r\n  \"lastName\": \"Doe\",\r\n  \"phoneNumber\": \"0987654321\",\r\n  \"profilePicture\": \"http://example.com/newpic.jpg\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/users/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"users",
+								"1"
+							]
+						},
+						"description": "Updates the user’s profile (name, phone, picture)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Flights Search",
+			"item": [
+				{
+					"name": "flights",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/flights?origin=Toronto&destination=Zurich&date=2024-11-17&returnDate=2024-11-29",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"flights"
+							],
+							"query": [
+								{
+									"key": "origin",
+									"value": "Toronto"
+								},
+								{
+									"key": "destination",
+									"value": "Zurich"
+								},
+								{
+									"key": "date",
+									"value": "2024-11-17"
+								},
+								{
+									"key": "returnDate",
+									"value": "2024-11-29"
+								}
+							]
+						},
+						"description": "Searches for flights based on origin, destination, and dates."
+					},
+					"response": []
+				},
+				{
+					"name": "flights/[id]",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/flights/bd7ee4df-004d-4c95-abda-633d276a5842?origin=Toronto&destination=Zurich&date=2024-11-17",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"flights",
+								"bd7ee4df-004d-4c95-abda-633d276a5842"
+							],
+							"query": [
+								{
+									"key": "origin",
+									"value": "Toronto"
+								},
+								{
+									"key": "destination",
+									"value": "Zurich"
+								},
+								{
+									"key": "date",
+									"value": "2024-11-17"
+								}
+							]
+						},
+						"description": "Retrieves detailed info for a specific flight."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Hotel Management",
+			"item": [
+				{
+					"name": "hotels",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Example Hotel\",\r\n  \"logo\": \"http://example.com/logo.png\",\r\n  \"address\": \"123 Example Road\",\r\n  \"location\": \"Example City, Country\",\r\n  \"starRating\": 5,\r\n  \"images\": [\"http://example.com/img1.png\", \"http://example.com/img2.png\"]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/hotels",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"hotels"
+							]
+						},
+						"description": "Adds a new hotel with the provided details."
+					},
+					"response": []
+				},
+				{
+					"name": "hotels/[id]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Example Hotel Updated\",\r\n  \"logo\": \"http://example.com/new-logo.png\",\r\n  \"address\": \"123 New Example Road\",\r\n  \"location\": \"New Example City, Country\",\r\n  \"starRating\": 4,\r\n  \"images\": [\"http://example.com/new-img1.png\", \"http://example.com/new-img2.png\"]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/hotels/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"hotels",
+								"1"
+							]
+						},
+						"description": "Updates an existing hotel’s information."
+					},
+					"response": []
+				},
+				{
+					"name": "hotel/[id]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/hotels/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"hotels",
+								"2"
+							]
+						},
+						"description": "Deletes a hotel by its ID."
+					},
+					"response": []
+				},
+				{
+					"name": "roomTypes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"hotelId\": 1,\r\n  \"name\": \"Twin Room\",\r\n  \"amenities\": [\"Two single beds\", \"WiFi\", \"TV\"],\r\n  \"pricePerNight\": 120.0,\r\n  \"images\": [\"https://example.com/twin1.jpg\", \"https://example.com/twin2.jpg\"],\r\n  \"availableRooms\": 10\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/roomTypes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"roomTypes"
+							]
+						},
+						"description": "Creates a room type for a hotel (name, amenities, price, images, total rooms)."
+					},
+					"response": []
+				},
+				{
+					"name": "roomTypes/[id]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/roomTypes/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"roomTypes",
+								"1"
+							]
+						},
+						"description": "Gets details of a specific room type."
+					},
+					"response": []
+				},
+				{
+					"name": "roomTypes/[id]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Twin Room Deluxe\",\r\n  \"amenities\": [\"Two double beds\", \"WiFi\", \"TV\", \"Air Conditioning\"],\r\n  \"pricePerNight\": 130.0,\r\n  \"images\": [\"https://example.com/twin-deluxe1.jpg\", \"https://example.com/twin-deluxe2.jpg\"],\r\n  \"availableRooms\": 8\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/roomTypes/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"roomTypes",
+								"1"
+							]
+						},
+						"description": "Updates details of a specific room type (name, amenities, price, images, total rooms)."
+					},
+					"response": []
+				},
+				{
+					"name": "roomTypes/[id]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/roomTypes/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"roomTypes",
+								"1"
+							]
+						},
+						"description": "Deletes a room type by its ID."
+					},
+					"response": []
+				},
+				{
+					"name": "bookings/owner",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/bookings/owner?startDate=2025-03-06&endDate=2025-03-08&room=Twin Room",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"bookings",
+								"owner"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2025-03-06"
+								},
+								{
+									"key": "endDate",
+									"value": "2025-03-08"
+								},
+								{
+									"key": "room",
+									"value": "Twin Room"
+								}
+							]
+						},
+						"description": "Retrieves owner bookings filtered by date range and room type."
+					},
+					"response": []
+				},
+				{
+					"name": "bookings/[id]/cancel",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/bookings/1/cancel",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"bookings",
+								"1",
+								"cancel"
+							]
+						},
+						"description": "Cancels a specific booking by its ID."
+					},
+					"response": []
+				},
+				{
+					"name": "hotels/availability",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/hotels/availability?startDate=2025-03-06&endDate=2025-03-08&roomId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"hotels",
+								"availability"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2025-03-06"
+								},
+								{
+									"key": "endDate",
+									"value": "2025-03-08"
+								},
+								{
+									"key": "roomId",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Returns room availability for a hotel based on a date range and room ID."
+					},
+					"response": []
+				},
+				{
+					"name": "hotels/availability[id]",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"availableRooms\": 20\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/hotels/availability/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"hotels",
+								"availability",
+								"1"
+							]
+						},
+						"description": "Updates available room count for a specific room type."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Hotel Search",
+			"item": [
+				{
+					"name": "hotels",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/hotels?checkIn=2025-03-06&checkOut=2025-03-08&city=Example City, Country&name=Example Hotel&minPrice=50&maxPrice=150",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"hotels"
+							],
+							"query": [
+								{
+									"key": "checkIn",
+									"value": "2025-03-06"
+								},
+								{
+									"key": "checkOut",
+									"value": "2025-03-08"
+								},
+								{
+									"key": "city",
+									"value": "Example City, Country"
+								},
+								{
+									"key": "name",
+									"value": "Example Hotel"
+								},
+								{
+									"key": "minPrice",
+									"value": "50"
+								},
+								{
+									"key": "maxPrice",
+									"value": "150"
+								}
+							]
+						},
+						"description": "Searches for hotels by check-in/check-out dates, city, name, and price range."
+					},
+					"response": []
+				},
+				{
+					"name": "hotels/[id]",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/hotels/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"hotels",
+								"1"
+							]
+						},
+						"description": "Retrieves detailed information for a specific hotel."
+					},
+					"response": []
+				},
+				{
+					"name": "hotels/[id]/rooms",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/hotels/1/rooms?checkIn=2025-03-06&checkOut=2025-03-08",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"hotels",
+								"1",
+								"rooms"
+							],
+							"query": [
+								{
+									"key": "checkIn",
+									"value": "2025-03-06"
+								},
+								{
+									"key": "checkOut",
+									"value": "2025-03-08"
+								}
+							]
+						},
+						"description": "Gets available room details for a hotel for given check-in/check-out dates."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Booking",
+			"item": [
+				{
+					"name": "bookings/user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"hotelId\": 1,\r\n  \"roomId\": 1,\r\n  \"checkIn\": \"2025-03-06\",\r\n  \"checkOut\": \"2025-03-08\",\r\n  \"flightIds\": [\"3742c9e4-1861-4ab8-8140-81870b19f100\"],\r\n  \"firstName\": \"Alice\",\r\n  \"lastName\": \"Doe\",\r\n  \"email\": \"alice@example.com\",\r\n  \"passportNumber\": \"A12345678\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/bookings/user",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"bookings",
+								"user"
+							]
+						},
+						"description": "Creates a new booking with hotel, room, and flight details."
+					},
+					"response": []
+				},
+				{
+					"name": "checkout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"bookingId\": 1,\r\n  \"cardNumber\": \"4539578763621486\",\r\n  \"expiryMonth\": 12,\r\n  \"expiryYear\": 2026\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/checkout",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"checkout"
+							]
+						},
+						"description": "Processes checkout for a booking using credit card details."
+					},
+					"response": []
+				},
+				{
+					"name": "suggestions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"flightId\": \"3d99946b-9263-4287-850d-3bfccd78f8ca\",\r\n  \"hotelId\": 1,\r\n  \"destination\": \"Zurich\",\r\n  \"departureCity\": \"Toronto\",\r\n  \"suggestedDate\": \"2026-03-06\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/suggestions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"suggestions"
+							]
+						},
+						"description": "Returns booking suggestions for flights and hotels based on input criteria."
+					},
+					"response": []
+				},
+				{
+					"name": "invoice",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"bookingId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/invoice",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"invoice"
+							]
+						},
+						"description": "Generates a PDF invoice for a specified booking."
+					},
+					"response": []
+				},
+				{
+					"name": "bookings/user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/bookings/user",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"bookings",
+								"user"
+							]
+						},
+						"description": "Retrieves all bookings for the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "bookings/user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \r\n    \"bookingIds\": [1, 2, 3] \r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/bookings/user",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"bookings",
+								"user"
+							]
+						},
+						"description": "Cancels bookings for the authenticated user.\n\n- To cancel a single booking, include `\"bookingId\": number` in the request body.\n    \n- To cancel multiple bookings, include `\"bookingIds\": [number, ...]`.\n    \n- To cancel all active bookings, include `\"cancelAll\": true`."
+					},
+					"response": []
+				},
+				{
+					"name": "bookings/verifyFlight",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/bookings/verifyFlight?lastName=Marez&bookingReference=A3D90E",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"bookings",
+								"verifyFlight"
+							],
+							"query": [
+								{
+									"key": "lastName",
+									"value": "Marez"
+								},
+								{
+									"key": "bookingReference",
+									"value": "A3D90E"
+								}
+							]
+						},
+						"description": "Verifies a flight booking using last name and booking reference."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "notifications",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/notifications",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"notifications"
+							]
+						},
+						"description": "Fetches notifications for the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "notifications",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"notificationId\": 1\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/notifications",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"notifications"
+							]
+						},
+						"description": "Updates a notification (marks it as read) based on its ID."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Extra",
+			"item": [
+				{
+					"name": "airports",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/airports",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"airports"
+							]
+						},
+						"description": "Returns a list of airports."
+					},
+					"response": []
+				},
+				{
+					"name": "cities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/cities",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"cities"
+							]
+						},
+						"description": "Returns a list of cities."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
