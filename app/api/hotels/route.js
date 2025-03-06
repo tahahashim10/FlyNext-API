@@ -4,6 +4,7 @@ import { getSearchParams } from "@/utils/query";
 import { geocodeAddress } from "@/utils/geocode";
 import { verifyToken } from "@/utils/auth";
 
+// don't add verification token since this user story is for visitors (U12)
 export async function GET(request) {
     const { checkIn, checkOut, city, name, starRating, minPrice, maxPrice } = getSearchParams(request);
 

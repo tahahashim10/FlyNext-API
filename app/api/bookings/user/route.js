@@ -4,16 +4,16 @@ import { getUserBookings } from "@/utils/bookings";
 import { verifyToken } from '@/utils/auth';
 
 export async function GET(request) {
+
+  // Verify the token
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
-      return NextResponse.json({ error: "Missing userId" }, { status: 400 });
-    }
-
-    const bookings = await getUserBookings(parseInt(userId));
-
+    // Use the authenticated user's id from the token
+    const bookings = await getUserBookings(tokenData.userId);
     return NextResponse.json({ bookings }, { status: 200 });
   } catch (error) {
     console.error("Fetch Bookings Error:", error);
@@ -21,25 +21,48 @@ export async function GET(request) {
   }
 }
 
+// for U20
 export async function PATCH(request) {
+
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
 
     // Option 1: Cancel a list of bookings
     if (body.bookingIds && Array.isArray(body.bookingIds)) {
       const bookingIds = body.bookingIds.map(Number);
+
+      // Ensure that all bookings to cancel belong to the authenticated user
+      const bookings = await prisma.booking.findMany({
+        where: {
+          id: { in: bookingIds },
+          userId: tokenData.userId,
+          status: { not: 'CANCELED' },
+        },
+      });
+      
+      if (bookings.length === 0) {
+        return NextResponse.json(
+          { message: "All specified bookings are already cancelled or do not belong to you." },
+          { status: 200 }
+        );
+      }
+
       const updated = await prisma.booking.updateMany({
-        where: { id: { in: bookingIds }, status: { not: 'CANCELED' } },
+        where: {
+          id: { in: bookings.map(b => b.id) },
+          status: { not: 'CANCELED' },
+        },
         data: { status: 'CANCELED' },
       });
-      if (updated.count === 0) {
-        return NextResponse.json({ message: "All specified bookings are already cancelled." }, { status: 200 });
-      }
-      // Get one booking to determine the userId (assuming all belong to the same user)
-      const bookingSample = await prisma.booking.findUnique({ where: { id: bookingIds[0] } });
+
       await prisma.notification.create({
         data: {
-          userId: bookingSample.userId,
+          userId: tokenData.userId,
           message: `Your selected bookings have been canceled successfully.`,
         },
       });
@@ -54,6 +77,12 @@ export async function PATCH(request) {
       if (!booking) {
         return NextResponse.json({ error: "Booking not found" }, { status: 404 });
       }
+
+      // Verify that the booking belongs to the authenticated user
+      if (booking.userId !== tokenData.userId) {
+        return NextResponse.json({ error: "Forbidden: You are not authorized to cancel this booking." }, { status: 403 });
+      }
+
       if (booking.status === 'CANCELED') {
         return NextResponse.json({ message: "Booking is already cancelled", booking }, { status: 200 });
       }
@@ -64,17 +93,16 @@ export async function PATCH(request) {
       // U22: Notify the user about the cancellation
       await prisma.notification.create({
         data: {
-          userId: updatedBooking.userId,
+          userId: tokenData.userId,
           message: `Your booking has been canceled successfully.`,
         },
       });
       return NextResponse.json({ message: 'Booking cancelled', booking: updatedBooking }, { status: 200 });
     }
     // Option 3: Cancel all bookings for a given user
-    else if (body.cancelAll && body.userId) {
-      const userId = Number(body.userId);
+    else if (body.cancelAll) {
       const updated = await prisma.booking.updateMany({
-        where: { userId, status: { not: 'CANCELED' } },
+        where: { userId: tokenData.userId, status: { not: 'CANCELED' } },
         data: { status: 'CANCELED' },
       });
       if (updated.count === 0) {
@@ -82,7 +110,7 @@ export async function PATCH(request) {
       }
       await prisma.notification.create({
         data: {
-          userId: userId,
+          userId: tokenData.userId,
           message: `All your active bookings have been canceled successfully.`,
         },
       });

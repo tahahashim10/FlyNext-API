@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
+import { verifyToken } from "@/utils/auth";
 
 export async function GET(request) {
+  
+  // Verify token
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     // Parse query parameters from the request URL.
     const { searchParams } = new URL(request.url);

@@ -1,8 +1,16 @@
 // app/api/hotels/availability/id/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/utils/db';
+import { verifyToken } from '@/utils/auth';
 
 export async function POST(request, { params }) {
+
+  // Verify token
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { id } = await params;
     const { availableRooms: newAvailable } = await request.json();
@@ -13,9 +21,15 @@ export async function POST(request, { params }) {
 
     const room = await prisma.room.findUnique({
       where: { id: parseInt(id) },
+      include: { hotel: true },
     });
     if (!room) {
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
+    }
+
+    // Check that the authenticated user owns the hotel that this room belongs to
+    if (room.hotel.ownerId !== tokenData.userId) {
+      return NextResponse.json({ error: "Forbidden: You do not own this hotel." }, { status: 403 });
     }
 
     const oldAvailable = room.availableRooms;

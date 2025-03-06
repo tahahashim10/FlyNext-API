@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/db";
 import { getSuggestedHotels, getSuggestedFlights } from "@/utils/suggestions";
+import { verifyToken } from "@/utils/auth";
 
 export async function POST(request) {
+
+  // Verify token to ensure the user is authenticated.
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
   try {
     const { flightId, hotelId, destination, departureCity, suggestedDate } = await request.json();
 

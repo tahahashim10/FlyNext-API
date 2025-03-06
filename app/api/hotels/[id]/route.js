@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/db";
 import { geocodeAddress } from "@/utils/geocode";
+import { verifyToken } from '@/utils/auth';
 
+// don't add verification token because this user story is for visitors (U13)
 export async function GET(request, { params }) {
     const { id } = await params;
     if (!id) {
@@ -57,6 +59,13 @@ export async function GET(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
+
+  // Verify the token first
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { id } = params;
     const { name, logo, address, location, starRating, images } = await request.json();
@@ -67,6 +76,11 @@ export async function PUT(request, { params }) {
     });
     if (!existingHotel) {
       return NextResponse.json({ error: 'Hotel not found' }, { status: 404 });
+    }
+
+    // Ensure that the authenticated user owns this hotel
+    if (existingHotel.ownerId !== tokenData.userId) {
+      return NextResponse.json({ error: "Forbidden: You do not own this hotel." }, { status: 403 });
     }
 
     // Update only fields that are provided
@@ -89,6 +103,13 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
+  
+  // Verify the token first
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { id } = params;
 
@@ -98,6 +119,11 @@ export async function DELETE(request, { params }) {
     });
     if (!existingHotel) {
       return NextResponse.json({ error: 'Hotel not found' }, { status: 404 });
+    }
+
+    // Ensure that the authenticated user owns this hotel
+    if (existingHotel.ownerId !== tokenData.userId) {
+      return NextResponse.json({ error: "Forbidden: You do not own this hotel." }, { status: 403 });
     }
 
     await prisma.hotel.delete({

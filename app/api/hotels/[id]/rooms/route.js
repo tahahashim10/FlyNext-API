@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/db";
 import { getSearchParams } from "@/utils/query";
 
+// don't add verification token because this user story is for visitors (U14)
 export async function GET(request, { params }) {
     const { id } = await params; 
     if (!id) {
