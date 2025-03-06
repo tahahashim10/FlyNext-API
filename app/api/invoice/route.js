@@ -23,7 +23,7 @@ export async function POST(request) {
     }
 
     // Ensure the booking belongs to the authenticated user.
-    if (booking.user.id !== tokenData.userId) {
+    if (booking.userId !== tokenData.userId) {
       return NextResponse.json({ error: "Forbidden: You are not authorized to access this booking." }, { status: 403 });
     }
 

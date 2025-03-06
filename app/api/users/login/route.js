@@ -32,7 +32,7 @@ export async function POST(request) {
     return NextResponse.json({ accessToken, refreshToken }, { status: 200 });
 
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("Login error:", error.stack);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
 
   }
