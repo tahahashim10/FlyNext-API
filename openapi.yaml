@@ -1,0 +1,2062 @@
+openapi: 3.0.0
+info:
+  title: CSC309 PP1
+  description: >-
+    This collection provides RESTful JSON endpoints for managing accounts,
+    hotels, flights, bookings, and notifications. All protected endpoints
+    require a valid JWT (set in the Authorization header as Bearer {{token}}).
+    The APIs support user registration/login, hotel and room management, flight
+    search through the AFS system, booking operations (create, checkout,
+    cancel), and notifications. Additionally, there are additional endpoints for
+    the locally hosted lists of cities and airports for frontend use (to come
+    later in PP2).
+
+
+    Below you will find all the user stories we implemented for PP1.
+
+
+    ### **Accounts**
+
+
+    - **U1: As a user, I want to sign up, log in, log out, and edit my profile.
+    Profile information includes first and last name, email, profile picture,
+    and phone number. Authentication should be handled with a proper JWT
+    setup.**
+        
+
+    ---
+
+
+    ### **Flights Search**
+
+
+    - **U2: As a visitor, I want to search for flights by specifying a source,
+    destination, and date(s). Source and destination could be either a city or
+    an airport. I want to search for one-way or round-trip flights.**
+        
+    - **U3: As a visitor, I want to view flight details, including
+    departure/arrival times, duration, and layovers.**
+        
+
+    _(The stories about auto-complete and date picker dropdowns are UI concerns
+    and will be implemented in Part 2.)_
+
+
+    ---
+
+
+    ### **Hotel Management**
+
+
+    - **U6: As a user, I want to add my hotel to the platform. A hotel has name,
+    logo, address, location, star-rating, and several images.**
+        
+    - **U7: As a hotel owner, I want to define room types, with each type having
+    a name (e.g., twin, double, etc.), amenities, prices per night, and several
+    images.**
+        
+    - **U8: As a hotel owner, I want to view and filter my hotel’s booking list
+    by date and/or room type.**
+        
+    - **U9: As a hotel owner, I want to cancel a hotel reservation, so that I
+    have flexibility in managing my hotel.**
+        
+    - **U10: As a hotel owner, I want to view room availability (per room type)
+    for specific date ranges to better understand occupancy trends.**
+        
+    - **U11: As a hotel owner, I want to update the number of available rooms of
+    each type in my hotel. If availability decreases, it may require canceling
+    some existing reservations.**
+        
+
+    ---
+
+
+    ### **Hotel Search**
+
+
+    - **U12: As a visitor, I want to search for hotels by check-in date,
+    check-out date, and city. I also want to filter them by name, star-rating,
+    and price range. Search results should display in a list that shows the
+    hotel information, starting price, and a location pinpoint on a map. The
+    results should only reflect available rooms.**
+        
+    - **U13: As a visitor, I want to view detailed hotel information, including
+    room types, amenities, and pricing.**
+        
+    - **U14: As a visitor, I want to view the availability and details of
+    different room types for my selected dates in a selected hotel.**
+        
+
+    ---
+
+
+    ### **Booking**
+
+
+    - **U15: As a user, I want to book an itinerary that includes a flight
+    (one-way or round-trip) and/or a hotel reservation.**
+        
+    - **U16: As a user, I want to a checkout page that displays all details
+    about my itinerary (flight and/or hotel), collects my credit card
+    information, validates the card details, and finalizes the booking if
+    everything is correct. Note that Validation means statically checking the
+    validity of the card number and expiry date. The card should not (and
+    cannot) be charged for real.**
+        
+    - **U17: As a user, I want to see hotel suggestions for the city if I am
+    flying to. I also want to see flight suggestions if I am about to book a
+    hotel stay. Both suggestions must have a link to take me to the main
+    hotel/flight search page with pre-filled inputs, while preserving my
+    current, in progress order.**
+        
+    - **U18: As a user, I want to receive an minimal, PDF invoice for my trip
+    booking, so that I have a record of the booking and transaction.**
+        
+    - **U19: As a user, I want to view my bookings, so that I can easily access
+    my itinerary and booking information.**
+        
+    - **U20: As a user, I want to cancel all or specific parts of a booking,
+    giving me flexibility in managing my trips.**
+        
+    - **U21: As a user, I want to verify my flight booking to ensure the flight
+    schedule remains as planned.**
+        
+
+    ---
+
+
+    ### **Notifications**
+
+
+    - **U22: As a user, I want to receive notifications when I book a new
+    itinerary, and when there are external changes to my booking (e.g.,
+    cancellation by me or hotel owner).**
+        
+    - **U23: As a hotel owner, I want to receive notifications when a new
+    booking is made for my hotel.**
+        
+
+    In each subfolder of this Postman project, the requests are organized in the
+    same order of user stories within each section. For example, in the Hotel
+    Management section, the first request (POST hotels) corresponds to U6.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+tags:
+  - name: Accounts
+  - name: Flights Search
+  - name: Hotel Management
+  - name: Hotel Search
+  - name: Booking
+  - name: Notifications
+  - name: Extra
+paths:
+  /api/users/register:
+    post:
+      tags:
+        - Accounts
+      summary: users/register
+      description: Registers a new user with profile details.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                firstName: John
+                lastName: Doe
+                email: john@example.com
+                password: password123
+                phoneNumber: '1234567890'
+                profilePicture: http://example.com/profile.jpg
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                  firstName:
+                    type: string
+                  lastName:
+                    type: string
+                  email:
+                    type: string
+                  phoneNumber:
+                    type: string
+                  profilePicture:
+                    type: string
+                  role:
+                    type: string
+              example:
+                user:
+                  id: 1
+                  firstName: "John"
+                  lastName: "Doe"
+                  email: "joe@example.com"
+                  phoneNumber: "1234567890"
+                  profilePicture: "http://example.com/profile.jpg"
+                  role: "USER"
+  /api/users/login:
+    post:
+      tags:
+        - Accounts
+      summary: "User login"
+      description: "Logs in a user and returns JWT tokens."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              email: "john@example.com"
+              password: "password123"
+      responses:
+        '200':
+          description: "Login successful, JWT tokens returned."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+              example:
+                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzQxMjQ4NDk3LCJleHAiOjE3NDEyNDkzOTd9.xiAp12QktbBvIV1C7h2xB_bjidvU78v6crnq2RnWOSA"
+                refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzQxMjQ4NDk3LCJleHAiOjE3NDE4NTMyOTd9.DKnNFTDG5kI12ZUDL_w79r2mZaTfsVdYBuLBfG6ygfs"
+  /api/users/1:
+    put:
+      tags:
+        - Accounts
+      summary: users/[id]
+      description: Updates the user’s profile (name, phone, picture).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                firstName: Jane
+                lastName: Doe
+                phoneNumber: '0987654321'
+                profilePicture: http://example.com/newpic.jpg
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: ''
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Profile updated successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  updatedUser:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      firstName:
+                        type: string
+                      lastName:
+                        type: string
+                      email:
+                        type: string
+                      phoneNumber:
+                        type: string
+                      profilePicture:
+                        type: string
+                      role:
+                        type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+              example:
+                message: "Profile updated successfully"
+                updatedUser:
+                  id: 1
+                  firstName: "Jane"
+                  lastName: "Doe"
+                  email: "john@example.com"
+                  phoneNumber: "0987654321"
+                  profilePicture: "http://example.com/newpic.jpg"
+                  role: "USER"
+                  createdAt: "2025-03-06T08:08:12.240Z"
+                  updatedAt: "2025-03-06T08:09:41.304Z"
+  /api/flights:
+    get:
+      tags:
+        - Flights Search
+      summary: flights
+      description: Searches for flights based on origin, destination, and dates.
+      parameters:
+        - name: origin
+          in: query
+          schema:
+            type: string
+          example: Toronto
+        - name: destination
+          in: query
+          schema:
+            type: string
+          example: Zurich
+        - name: date
+          in: query
+          schema:
+            type: string
+          example: '2024-11-17'
+        - name: returnDate
+          in: query
+          schema:
+            type: string
+          example: '2024-11-29'
+      responses:
+        '200':
+          description: "Flights retrieved successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                flightThere:
+                  results:
+                    - legs: 1
+                      flights:
+                        - departureTime: "2024-11-17T14:50:00.000Z"
+                          arrivalTime: "2024-11-18T02:00:00.000Z"
+                          duration: 670
+                    - legs: 2
+                      flights:
+                        - departureTime: "2024-11-17T20:30:00.000Z"
+                          arrivalTime: "2024-11-18T06:20:00.000Z"
+                          duration: 590
+                        - departureTime: "2024-11-18T12:40:00.000Z"
+                          arrivalTime: "2024-11-19T02:30:00.000Z"
+                          duration: 830
+                      layover: 380
+                flightBack:
+                  results:
+                    - legs: 1
+                      flights:
+                        - departureTime: "2024-11-29T18:35:00.000Z"
+                          arrivalTime: "2024-11-30T00:50:00.000Z"
+                          duration: 375
+  /api/flights/bd7ee4df-004d-4c95-abda-633d276a5842:
+    get:
+      tags:
+        - Flights Search
+      summary: flights/[id]
+      description: Retrieves detailed info for a specific flight.
+      parameters:
+        - name: origin
+          in: query
+          schema:
+            type: string
+          example: Toronto
+        - name: destination
+          in: query
+          schema:
+            type: string
+          example: Zurich
+        - name: date
+          in: query
+          schema:
+            type: string
+          example: '2024-11-17'
+      responses:
+        '200':
+          description: "Flight details retrieved successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  flightNumber:
+                    type: string
+                  departureTime:
+                    type: string
+                    format: date-time
+                  arrivalTime:
+                    type: string
+                    format: date-time
+                  originId:
+                    type: string
+                  destinationId:
+                    type: string
+                  duration:
+                    type: integer
+                  price:
+                    type: number
+                  currency:
+                    type: string
+                  availableSeats:
+                    type: integer
+                  status:
+                    type: string
+                  airline:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                      name:
+                        type: string
+                  origin:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                      name:
+                        type: string
+                      city:
+                        type: string
+                      country:
+                        type: string
+                  destination:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                      name:
+                        type: string
+                      city:
+                        type: string
+                      country:
+                        type: string
+              example:
+                id: "bd7ee4df-004d-4c95-abda-633d276a5842"
+                flightNumber: "AC8762"
+                departureTime: "2024-11-17T14:50:00.000Z"
+                arrivalTime: "2024-11-18T02:00:00.000Z"
+                originId: "370d2633-ba94-47f5-a735-513c0e332224"
+                destinationId: "2bcb7925-96aa-4de8-9ec1-3622e954c0b6"
+                duration: 670
+                price: 1744
+                currency: "CAD"
+                availableSeats: 0
+                status: "SCHEDULED"
+                airline:
+                  code: "AC"
+                  name: "Air Canada"
+                origin:
+                  code: "YYZ"
+                  name: "Toronto Pearson International Airport"
+                  city: "Toronto"
+                  country: "Canada"
+                destination:
+                  code: "ZRH"
+                  name: "Zurich Airport"
+                  city: "Zurich"
+                  country: "Switzerland"
+  /api/hotels:
+    post:
+      tags:
+        - Hotel Management
+      summary: hotels
+      description: Adds a new hotel with the provided details.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Example Hotel
+                logo: http://example.com/logo.png
+                address: 123 Example Road
+                location: Example City, Country
+                starRating: 5
+                images:
+                  - http://example.com/img1.png
+                  - http://example.com/img2.png
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Hotel added successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 1
+                ownerId: 1
+                name: "Example Hotel"
+                logo: "http://example.com/logo.png"
+                address: "123 Example Road"
+                location: "Example City, Country"
+                starRating: 5
+                images:
+                  - "http://example.com/img1.png"
+                  - "http://example.com/img2.png"
+                createdAt: "2025-03-06T08:11:37.623Z"
+                updatedAt: "2025-03-06T08:11:37.623Z"
+    get:
+      tags:
+        - Hotel Search
+      summary: hotels
+      description: >-
+        Searches for hotels by check-in/check-out dates, city, name, and price
+        range.
+      parameters:
+        - name: checkIn
+          in: query
+          schema:
+            type: string
+          example: '2025-03-06'
+        - name: checkOut
+          in: query
+          schema:
+            type: string
+          example: '2025-03-08'
+        - name: city
+          in: query
+          schema:
+            type: string
+          example: Example City, Country
+        - name: name
+          in: query
+          schema:
+            type: string
+          example: Example Hotel
+        - name: minPrice
+          in: query
+          schema:
+            type: integer
+          example: '50'
+        - name: maxPrice
+          in: query
+          schema:
+            type: integer
+          example: '150'
+      responses:
+        '200':
+          description: "Hotels search results retrieved successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        logo:
+                          type: string
+                        address:
+                          type: string
+                        location:
+                          type: string
+                        starRating:
+                          type: integer
+                        startingPrice:
+                          type: number
+                        coordinates:
+                          type: object
+                          properties:
+                            lat:
+                              type: number
+                              nullable: true
+                            lng:
+                              type: number
+                              nullable: true
+              example:
+                results:
+                  - id: 3
+                    name: "Example Hotel"
+                    logo: "http://example.com/logo.png"
+                    address: "123 Example Road"
+                    location: "Example City, Country"
+                    starRating: 5
+                    startingPrice: 120
+                    coordinates:
+                      lat: null
+                      lng: null
+
+  /api/hotels/1:
+    put:
+      tags:
+        - Hotel Management
+      summary: hotels/[id]
+      description: Updates an existing hotel’s information.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Example Hotel Updated
+                logo: http://example.com/new-logo.png
+                address: 123 New Example Road
+                location: New Example City, Country
+                starRating: 4
+                images:
+                  - http://example.com/new-img1.png
+                  - http://example.com/new-img2.png
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Hotel updated successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 1
+                ownerId: 1
+                name: "Example Hotel Updated"
+                logo: "http://example.com/new-logo.png"
+                address: "123 New Example Road"
+                location: "New Example City, Country"
+                starRating: 4
+                images:
+                  - "http://example.com/new-img1.png"
+                  - "http://example.com/new-img2.png"
+                createdAt: "2025-03-06T08:11:37.623Z"
+                updatedAt: "2025-03-06T08:11:59.096Z"
+    get:
+      tags:
+        - Hotel Search
+      summary: hotels/[id]
+      description: Retrieves detailed information for a specific hotel.
+      responses:
+        '200':
+          description: "Hotel details retrieved successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  logo:
+                    type: string
+                  address:
+                    type: string
+                  location:
+                    type: string
+                  starRating:
+                    type: integer
+                  images:
+                    type: array
+                    items:
+                      type: string
+                  coordinates:
+                    type: object
+                    properties:
+                      lat:
+                        type: number
+                        nullable: true
+                      lng:
+                        type: number
+                        nullable: true
+                  rooms:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        type:
+                          type: string
+                        amenities:
+                          type: array
+                          items:
+                            type: string
+                        pricePerNight:
+                          type: number
+                        images:
+                          type: array
+                          items:
+                            type: string
+                        availableRooms:
+                          type: integer
+              example:
+                id: 1
+                name: "Example Hotel Updated"
+                logo: "http://example.com/new-logo.png"
+                address: "123 New Example Road"
+                location: "New Example City, Country"
+                starRating: 4
+                images:
+                  - "http://example.com/new-img1.png"
+                  - "http://example.com/new-img2.png"
+                coordinates:
+                  lat: null
+                  lng: null
+                rooms:
+                  - id: 1
+                    type: "Twin Room"
+                    amenities:
+                      - "Two single beds"
+                      - "WiFi"
+                      - "TV"
+                    pricePerNight: 120
+                    images:
+                      - "https://example.com/twin1.jpg"
+                      - "https://example.com/twin2.jpg"
+                    availableRooms: 20
+
+  /api/hotels/2:
+    delete:
+      tags:
+        - Hotel Management
+      summary: hotel/[id]
+      description: Deletes a hotel by its ID.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Hotel deleted successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: "Hotel deleted successfully"
+  /api/roomTypes:
+    post:
+      tags:
+        - Hotel Management
+      summary: roomTypes
+      description: >-
+        Creates a room type for a hotel (name, amenities, price, images, total
+        rooms).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                hotelId: 1
+                name: Twin Room
+                amenities:
+                  - Two single beds
+                  - WiFi
+                  - TV
+                pricePerNight: 120
+                images:
+                  - https://example.com/twin1.jpg
+                  - https://example.com/twin2.jpg
+                availableRooms: 10
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Room type created successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 1
+                hotelId: 1
+                name: "Twin Room"
+                amenities:
+                  - "Two single beds"
+                  - "WiFi"
+                  - "TV"
+                pricePerNight: 120
+                images:
+                  - "https://example.com/twin1.jpg"
+                  - "https://example.com/twin2.jpg"
+                availableRooms: 10
+                createdAt: "2025-03-06T08:13:01.323Z"
+                updatedAt: "2025-03-06T08:13:01.323Z"
+  /api/roomTypes/1:
+    get:
+      tags:
+        - Hotel Management
+      summary: roomTypes/[id]
+      description: Gets details of a specific room type.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Room type details retrieved successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 1
+                hotelId: 1
+                name: "Twin Room"
+                amenities:
+                  - "Two single beds"
+                  - "WiFi"
+                  - "TV"
+                pricePerNight: 120
+                images:
+                  - "https://example.com/twin1.jpg"
+                  - "https://example.com/twin2.jpg"
+                availableRooms: 10
+                createdAt: "2025-03-06T08:13:01.323Z"
+                updatedAt: "2025-03-06T08:13:01.323Z"
+                hotel:
+                  id: 1
+                  ownerId: 1
+                  name: "Example Hotel Updated"
+                  logo: "http://example.com/new-logo.png"
+                  address: "123 New Example Road"
+                  location: "New Example City, Country"
+                  starRating: 4
+                  images:
+                    - "http://example.com/new-img1.png"
+                    - "http://example.com/new-img2.png"
+                  createdAt: "2025-03-06T08:11:37.623Z"
+                  updatedAt: "2025-03-06T08:11:59.096Z"
+    put:
+      tags:
+        - Hotel Management
+      summary: roomTypes/[id]
+      description: >-
+        Updates details of a specific room type (name, amenities, price, images,
+        total rooms).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: Twin Room Deluxe
+                amenities:
+                  - Two double beds
+                  - WiFi
+                  - TV
+                  - Air Conditioning
+                pricePerNight: 130
+                images:
+                  - https://example.com/twin-deluxe1.jpg
+                  - https://example.com/twin-deluxe2.jpg
+                availableRooms: 8
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Room type updated successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 1
+                hotelId: 1
+                name: "Twin Room Deluxe"
+                amenities:
+                  - "Two double beds"
+                  - "WiFi"
+                  - "TV"
+                  - "Air Conditioning"
+                pricePerNight: 130
+                images:
+                  - "https://example.com/twin-deluxe1.jpg"
+                  - "https://example.com/twin-deluxe2.jpg"
+                availableRooms: 8
+                createdAt: "2025-03-06T08:13:01.323Z"
+                updatedAt: "2025-03-06T08:13:52.613Z"
+    delete:
+      tags:
+        - Hotel Management
+      summary: roomTypes/[id]
+      description: Deletes a room type by its ID.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Room type deleted successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: "Room deleted successfully"
+  /api/bookings/owner:
+    get:
+      tags:
+        - Hotel Management
+      summary: bookings/owner
+      description: Retrieves owner bookings filtered by date range and room type.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+          example: '2025-03-06'
+        - name: endDate
+          in: query
+          schema:
+            type: string
+          example: '2025-03-08'
+        - name: room
+          in: query
+          schema:
+            type: string
+          example: Twin Room
+      responses:
+        '200':
+          description: "Owner bookings retrieved successfully."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    userId:
+                      type: integer
+                    hotelId:
+                      type: integer
+                    roomId:
+                      type: integer
+                    checkIn:
+                      type: string
+                      format: date-time
+                    checkOut:
+                      type: string
+                      format: date-time
+                    status:
+                      type: string
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+                    room:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        hotelId:
+                          type: integer
+                        name:
+                          type: string
+                        amenities:
+                          type: array
+                          items:
+                            type: string
+                        pricePerNight:
+                          type: number
+                        images:
+                          type: array
+                          items:
+                            type: string
+                        availableRooms:
+                          type: integer
+                        createdAt:
+                          type: string
+                          format: date-time
+                        updatedAt:
+                          type: string
+                          format: date-time
+                    hotel:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        ownerId:
+                          type: integer
+                        name:
+                          type: string
+                        logo:
+                          type: string
+                        address:
+                          type: string
+                        location:
+                          type: string
+                        starRating:
+                          type: integer
+                        images:
+                          type: array
+                          items:
+                            type: string
+                        createdAt:
+                          type: string
+                          format: date-time
+                        updatedAt:
+                          type: string
+                          format: date-time
+              example:
+                - id: 1
+                  userId: 1
+                  hotelId: 1
+                  roomId: 2
+                  checkIn: "2025-03-06T00:00:00.000Z"
+                  checkOut: "2025-03-08T00:00:00.000Z"
+                  status: "PENDING"
+                  createdAt: "2025-03-06T08:15:50.136Z"
+                  updatedAt: "2025-03-06T08:15:50.136Z"
+                  room:
+                    id: 2
+                    hotelId: 1
+                    name: "Twin Room"
+                    amenities:
+                      - "Two single beds"
+                      - "WiFi"
+                      - "TV"
+                    pricePerNight: 120
+                    images:
+                      - "https://example.com/twin1.jpg"
+                      - "https://example.com/twin2.jpg"
+                    availableRooms: 10
+                    createdAt: "2025-03-06T08:14:30.460Z"
+                    updatedAt: "2025-03-06T08:14:30.460Z"
+                  hotel:
+                    id: 1
+                    ownerId: 1
+                    name: "Example Hotel Updated"
+                    logo: "http://example.com/new-logo.png"
+                    address: "123 New Example Road"
+                    location: "New Example City, Country"
+                    starRating: 4
+                    images:
+                      - "http://example.com/new-img1.png"
+                      - "http://example.com/new-img2.png"
+                    createdAt: "2025-03-06T08:11:37.623Z"
+                    updatedAt: "2025-03-06T08:11:59.096Z"
+  /api/bookings/1/cancel:
+    post:
+      tags:
+        - Hotel Management
+      summary: bookings/[id]/cancel
+      description: Cancels a specific booking by its ID.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Booking cancelled successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                id: 1
+                userId: 1
+                hotelId: 1
+                roomId: 2
+                checkIn: "2025-03-06T00:00:00.000Z"
+                checkOut: "2025-03-08T00:00:00.000Z"
+                status: "CANCELED"
+                createdAt: "2025-03-06T08:15:50.136Z"
+                updatedAt: "2025-03-06T08:16:53.626Z"
+
+  /api/hotels/availability:
+    get:
+      tags:
+        - Hotel Management
+      summary: hotels/availability
+      description: Returns room availability for a hotel based on a date range and room ID.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+          example: '2025-03-06'
+        - name: endDate
+          in: query
+          schema:
+            type: string
+          example: '2025-03-08'
+        - name: roomId
+          in: query
+          schema:
+            type: integer
+          example: '1'
+      responses:
+        '200':
+          description: "Room availability retrieved."
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                room:
+                  id: 1
+                  name: "Twin Room"
+                  totalRooms: 10
+                dateRange:
+                  startDate: "2025-03-06"
+                  endDate: "2025-03-08"
+                bookingsCount: 0
+                availableRooms: 10
+  /api/hotels/availability/1:
+    post:
+      tags:
+        - Hotel Management
+      summary: hotels/availability[id]
+      description: Updates available room count for a specific room type.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                availableRooms: 20
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Availability updated successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                room:
+                  id: 1
+                  hotelId: 1
+                  name: "Twin Room"
+                  amenities:
+                    - "Two single beds"
+                    - "WiFi"
+                    - "TV"
+                  pricePerNight: 120
+                  images:
+                    - "https://example.com/twin1.jpg"
+                    - "https://example.com/twin2.jpg"
+                  availableRooms: 20
+                  createdAt: "2025-03-06T08:14:30.460Z"
+                  updatedAt: "2025-03-06T08:18:28.537Z"
+                canceledBookings: []
+  /api/hotels/1/rooms:
+    get:
+      tags:
+        - Hotel Search
+      summary: hotels/[id]/rooms
+      description: >-
+        Gets available room details for a hotel for given check-in/check-out
+        dates.
+      parameters:
+        - name: checkIn
+          in: query
+          schema:
+            type: string
+          example: '2025-03-06'
+        - name: checkOut
+          in: query
+          schema:
+            type: string
+          example: '2025-03-08'
+      responses:
+        '200':
+          description: "Room types retrieved successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        amenities:
+                          type: array
+                          items:
+                            type: string
+                        pricePerNight:
+                          type: number
+                        images:
+                          type: array
+                          items:
+                            type: string
+                        totalAvailableRooms:
+                          type: integer
+                        remainingRooms:
+                          type: integer
+              example:
+                results:
+                  - id: 1
+                    name: "Twin Room"
+                    amenities:
+                      - "Two single beds"
+                      - "WiFi"
+                      - "TV"
+                    pricePerNight: 120
+                    images:
+                      - "https://example.com/twin1.jpg"
+                      - "https://example.com/twin2.jpg"
+                    totalAvailableRooms: 20
+                    remainingRooms: 18
+
+  /api/bookings/user:
+    post:
+      tags:
+        - Booking
+      summary: "Create booking"
+      description: "Creates a new booking with hotel, room, and flight details."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              hotelId: 1
+              roomId: 1
+              checkIn: "2025-03-06"
+              checkOut: "2025-03-08"
+              flightIds:
+                - "3742c9e4-1861-4ab8-8140-81870b19f100"
+              firstName: Alice
+              lastName: Doe
+              email: alice@example.com
+              passportNumber: A12345678
+      responses:
+        '200':
+          description: "Booking created successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hotelBooking:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      userId:
+                        type: integer
+                      hotelId:
+                        type: integer
+                      roomId:
+                        type: integer
+                      checkIn:
+                        type: string
+                        format: date-time
+                      checkOut:
+                        type: string
+                        format: date-time
+                      status:
+                        type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+                  flightBooking:
+                    type: object
+                    properties:
+                      bookingReference:
+                        type: string
+                      ticketNumber:
+                        type: string
+                      firstName:
+                        type: string
+                      lastName:
+                        type: string
+                      email:
+                        type: string
+                      passportNumber:
+                        type: string
+                      status:
+                        type: string
+                      agencyId:
+                        type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+                      flights:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            flightNumber:
+                              type: string
+                            departureTime:
+                              type: string
+                              format: date-time
+                            arrivalTime:
+                              type: string
+                              format: date-time
+                            originId:
+                              type: string
+                            destinationId:
+                              type: string
+                            duration:
+                              type: integer
+                            price:
+                              type: number
+                            currency:
+                              type: string
+                            availableSeats:
+                              type: integer
+                            status:
+                              type: string
+                            airline:
+                              type: object
+                              properties:
+                                code:
+                                  type: string
+                                name:
+                                  type: string
+                            origin:
+                              type: object
+                              properties:
+                                code:
+                                  type: string
+                                name:
+                                  type: string
+                                city:
+                                  type: string
+                                country:
+                                  type: string
+                            destination:
+                              type: object
+                              properties:
+                                code:
+                                  type: string
+                                name:
+                                  type: string
+                                city:
+                                  type: string
+                                country:
+                                  type: string
+              example:
+                hotelBooking:
+                  id: 2
+                  userId: 1
+                  hotelId: 1
+                  roomId: 1
+                  checkIn: "2025-03-06T00:00:00.000Z"
+                  checkOut: "2025-03-08T00:00:00.000Z"
+                  status: "PENDING"
+                  createdAt: "2025-03-06T08:39:19.411Z"
+                  updatedAt: "2025-03-06T08:39:19.411Z"
+                flightBooking:
+                  bookingReference: "51F7D8"
+                  ticketNumber: "8ea750a1c6"
+                  firstName: "Alice"
+                  lastName: "Doe"
+                  email: "alice@example.com"
+                  passportNumber: "A12345678"
+                  status: "CONFIRMED"
+                  agencyId: "f125a984-4ab3-4df9-9eeb-a0ce7517e3e2"
+                  createdAt: "2025-03-06T08:39:21.879Z"
+                  flights:
+                    - id: "3742c9e4-1861-4ab8-8140-81870b19f100"
+                      flightNumber: "SK952"
+                      departureTime: "2024-11-15T16:15:00.000Z"
+                      arrivalTime: "2024-11-15T21:20:00.000Z"
+                      originId: "7d3cd81e-5b33-4235-aa4a-8955237e729b"
+                      destinationId: "2bcb7925-96aa-4de8-9ec1-3622e954c0b6"
+                      duration: 305
+                      price: 301
+                      currency: "CAD"
+                      availableSeats: 38
+                      status: "SCHEDULED"
+                      airline:
+                        code: "SK"
+                        name: "Scandinavian Airlines"
+                      origin:
+                        code: "ARN"
+                        name: "Stockholm Arlanda Airport"
+                        city: "Stockholm"
+                        country: "Sweden"
+                      destination:
+                        code: "ZRH"
+                        name: "Zurich Airport"
+                        city: "Zurich"
+                        country: "Switzerland"
+    get:
+      tags:
+        - Booking
+      summary: "Get user bookings"
+      description: "Retrieves all bookings for the authenticated user."
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "User bookings retrieved successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        userId:
+                          type: integer
+                        hotelId:
+                          type: integer
+                        roomId:
+                          type: integer
+                        checkIn:
+                          type: string
+                          format: date-time
+                        checkOut:
+                          type: string
+                          format: date-time
+                        status:
+                          type: string
+                        createdAt:
+                          type: string
+                          format: date-time
+                        updatedAt:
+                          type: string
+                          format: date-time
+                        hotel:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            location:
+                              type: string
+                        room:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            pricePerNight:
+                              type: number
+              example:
+                bookings:
+                  - id: 2
+                    userId: 1
+                    hotelId: 1
+                    roomId: 1
+                    checkIn: "2025-03-06T00:00:00.000Z"
+                    checkOut: "2025-03-08T00:00:00.000Z"
+                    status: "PENDING"
+                    createdAt: "2025-03-06T08:39:19.411Z"
+                    updatedAt: "2025-03-06T08:39:19.411Z"
+                    hotel:
+                      name: "Example Hotel Updated"
+                      location: "New Example City, Country"
+                    room:
+                      name: "Twin Room"
+                      pricePerNight: 120
+                  - id: 1
+                    userId: 1
+                    hotelId: 1
+                    roomId: 1
+                    checkIn: "2025-03-06T00:00:00.000Z"
+                    checkOut: "2025-03-08T00:00:00.000Z"
+                    status: "PENDING"
+                    createdAt: "2025-03-06T08:15:50.136Z"
+                    updatedAt: "2025-03-06T08:16:53.626Z"
+                    hotel:
+                      name: "Example Hotel Updated"
+                      location: "New Example City, Country"
+                    room:
+                      name: "Twin Room"
+                      pricePerNight: 120
+    patch:
+      tags:
+        - Booking
+      summary: "Cancel bookings"
+      description: >
+        Cancels bookings for the authenticated user.
+        - To cancel a single booking, include `"bookingId": number`.
+        - To cancel multiple bookings, include `"bookingIds": [number, ...]`.
+        - To cancel all active bookings, include `"cancelAll": true`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example:
+              bookingIds:
+                - 1
+                - 2
+                - 3
+      responses:
+        '200':
+          description: "Bookings cancellation processed."
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                message: "Bookings cancelled"
+                count: 3
+
+  /api/checkout:
+    post:
+      tags:
+        - Booking
+      summary: checkout
+      description: Processes checkout for a booking using credit card details.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                bookingId: 1
+                cardNumber: '4539578763621486'
+                expiryMonth: 12
+                expiryYear: 2026
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Booking confirmed successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  booking:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      userId:
+                        type: integer
+                      hotelId:
+                        type: integer
+                      roomId:
+                        type: integer
+                      checkIn:
+                        type: string
+                        format: date-time
+                      checkOut:
+                        type: string
+                        format: date-time
+                      status:
+                        type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+              example:
+                message: "Booking confirmed"
+                booking:
+                  id: 1
+                  userId: 1
+                  hotelId: 1
+                  roomId: 1
+                  checkIn: "2025-03-06T00:00:00.000Z"
+                  checkOut: "2025-03-08T00:00:00.000Z"
+                  status: "CONFIRMED"
+                  createdAt: "2025-03-06T08:15:50.136Z"
+                  updatedAt: "2025-03-06T08:52:24.977Z"
+
+  /api/suggestions:
+    post:
+      tags:
+        - Booking
+      summary: suggestions
+      description: >-
+        Returns booking suggestions for flights and hotels based on input
+        criteria.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                flightId: 3d99946b-9263-4287-850d-3bfccd78f8ca
+                hotelId: 1
+                destination: Zurich
+                departureCity: Toronto
+                suggestedDate: '2026-03-06'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Suggestions retrieved successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hotels:
+                    type: array
+                    items:
+                      type: object
+                  searchUrl:
+                    type: string
+                  flights:
+                    type: array
+                    items:
+                      type: object
+              example:
+                hotels: []
+                searchUrl: "/search/flights?destination=New%20Example%20City%2C%20Country&keepOrder=true"
+                flights: []
+
+  /api/invoice:
+    post:
+      tags:
+        - Booking
+      summary: invoice
+      description: Generates a PDF invoice for a specified booking.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                bookingId: 1
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "PDF invoice generated successfully."
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /api/bookings/verifyFlight:
+    get:
+      tags:
+        - Booking
+      summary: bookings/verifyFlight
+      description: Verifies a flight booking using last name and booking reference.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: lastName
+          in: query
+          schema:
+            type: string
+          example: Marez
+        - name: bookingReference
+          in: query
+          schema:
+            type: string
+          example: A3D90E
+      responses:
+        '200':
+          description: "Flight booking confirmed successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookingReference:
+                    type: string
+                  ticketNumber:
+                    type: string
+                  firstName:
+                    type: string
+                  lastName:
+                    type: string
+                  email:
+                    type: string
+                  passportNumber:
+                    type: string
+                  status:
+                    type: string
+                  agencyId:
+                    type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  flights:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        flightNumber:
+                          type: string
+                        departureTime:
+                          type: string
+                          format: date-time
+                        arrivalTime:
+                          type: string
+                          format: date-time
+                        originId:
+                          type: string
+                        destinationId:
+                          type: string
+                        duration:
+                          type: integer
+                        price:
+                          type: number
+                        currency:
+                          type: string
+                        availableSeats:
+                          type: integer
+                        status:
+                          type: string
+                        airline:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                            name:
+                              type: string
+                        origin:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                            name:
+                              type: string
+                            city:
+                              type: string
+                            country:
+                              type: string
+                        destination:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                            name:
+                              type: string
+                            city:
+                              type: string
+                            country:
+                              type: string
+              example:
+                bookingReference: "A3D90E"
+                ticketNumber: "134df9cc43"
+                firstName: "Ali"
+                lastName: "Marez"
+                email: "test@test.com"
+                passportNumber: "123239934"
+                status: "CONFIRMED"
+                agencyId: "3d99946b-9263-4287-850d-3bfccd78f8ca"
+                createdAt: "2024-11-04T06:30:04.727Z"
+                flights:
+                  - id: "bd7ee4df-004d-4c95-abda-633d276a5842"
+                    flightNumber: "AC8762"
+                    departureTime: "2024-11-17T14:50:00.000Z"
+                    arrivalTime: "2024-11-18T02:00:00.000Z"
+                    originId: "370d2633-ba94-47f5-a735-513c0e332224"
+                    destinationId: "2bcb7925-96aa-4de8-9ec1-3622e954c0b6"
+                    duration: 670
+                    price: 1744
+                    currency: "CAD"
+                    availableSeats: 0
+                    status: "SCHEDULED"
+                    airline:
+                      code: "AC"
+                      name: "Air Canada"
+                    origin:
+                      code: "YYZ"
+                      name: "Toronto Pearson International Airport"
+                      city: "Toronto"
+                      country: "Canada"
+                    destination:
+                      code: "ZRH"
+                      name: "Zurich Airport"
+                      city: "Zurich"
+                      country: "Switzerland"
+
+  /api/notifications:
+    get:
+      tags:
+        - Notifications
+      summary: notifications
+      description: Fetches notifications for the authenticated user.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Notifications retrieved successfully."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    userId:
+                      type: integer
+                    message:
+                      type: string
+                    read:
+                      type: boolean
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+              example:
+                - id: 9
+                  userId: 1
+                  message: "Your booking at Example Hotel Updated has been confirmed."
+                  read: false
+                  createdAt: "2025-03-06T08:52:24.985Z"
+                  updatedAt: "2025-03-06T08:52:24.985Z"
+                - id: 8
+                  userId: 1
+                  message: "Your selected bookings have been canceled successfully."
+                  read: false
+                  createdAt: "2025-03-06T08:43:56.562Z"
+                  updatedAt: "2025-03-06T08:43:56.562Z"
+                - id: 7
+                  userId: 1
+                  message: "Your flight booking has been confirmed."
+                  read: false
+                  createdAt: "2025-03-06T08:39:21.749Z"
+                  updatedAt: "2025-03-06T08:39:21.749Z"
+                - id: 6
+                  userId: 1
+                  message: "A new booking has been made at your hotel Example Hotel Updated."
+                  read: false
+                  createdAt: "2025-03-06T08:39:19.426Z"
+                  updatedAt: "2025-03-06T08:39:19.426Z"
+                - id: 5
+                  userId: 1
+                  message: "Your booking at Example Hotel Updated has been created. Check-in: 2025-03-06, Check-out: 2025-03-08."
+                  read: false
+                  createdAt: "2025-03-06T08:39:19.419Z"
+                  updatedAt: "2025-03-06T08:39:19.419Z"
+                - id: 4
+                  userId: 1
+                  message: "Your booking at Example Hotel Updated has been canceled by the hotel owner."
+                  read: false
+                  createdAt: "2025-03-06T08:16:53.633Z"
+                  updatedAt: "2025-03-06T08:16:53.633Z"
+                - id: 3
+                  userId: 1
+                  message: "Your flight booking has been confirmed."
+                  read: false
+                  createdAt: "2025-03-06T08:15:51.589Z"
+                  updatedAt: "2025-03-06T08:15:51.589Z"
+                - id: 2
+                  userId: 1
+                  message: "A new booking has been made at your hotel Example Hotel Updated."
+                  read: false
+                  createdAt: "2025-03-06T08:15:50.151Z"
+                  updatedAt: "2025-03-06T08:15:50.151Z"
+                - id: 1
+                  userId: 1
+                  message: "Your booking at Example Hotel Updated has been created. Check-in: 2025-03-06, Check-out: 2025-03-08."
+                  read: false
+                  createdAt: "2025-03-06T08:15:50.144Z"
+                  updatedAt: "2025-03-06T08:15:50.144Z"
+    patch:
+      tags:
+        - Notifications
+      summary: notifications
+      description: Updates a notification (marks it as read) based on its ID.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                notificationId: 1
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Notification updated successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  userId:
+                    type: integer
+                  message:
+                    type: string
+                  read:
+                    type: boolean
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+              example:
+                id: 1
+                userId: 1
+                message: "Your booking at Example Hotel Updated has been created. Check-in: 2025-03-06, Check-out: 2025-03-08."
+                read: true
+                createdAt: "2025-03-06T08:15:50.144Z"
+                updatedAt: "2025-03-06T08:58:05.073Z"
+  /api/airports:
+    get:
+      tags:
+        - Extra
+      summary: airports
+      description: Returns a list of airports.
+      responses:
+        '200':
+          description: "Airports list retrieved successfully."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    code:
+                      type: string
+                    name:
+                      type: string
+                    city:
+                      type: string
+                    country:
+                      type: string
+              example:
+                - id: 1
+                  code: "ATL"
+                  name: "Hartsfield–Jackson Atlanta International Airport"
+                  city: "Atlanta"
+                  country: "United States"
+                - id: 2
+                  code: "PEK"
+                  name: "Beijing Capital International Airport"
+                  city: "Beijing"
+                  country: "China"
+                - id: 3
+                  code: "LAX"
+                  name: "Los Angeles International Airport"
+                  city: "Los Angeles"
+                  country: "United States"
+                - id: 4
+                  code: "DXB"
+                  name: "Dubai International Airport"
+                  city: "Dubai"
+                  country: "United Arab Emirates"
+                - id: 5
+                  code: "HND"
+                  name: "Tokyo Haneda Airport"
+                  city: "Tokyo"
+                  country: "Japan"
+                - id: 6
+                  code: "ORD"
+                  name: "O'Hare International Airport"
+                  city: "Chicago"
+                  country: "United States"
+                - id: 7
+                  code: "LHR"
+                  name: "Heathrow Airport"
+                  city: "London"
+                  country: "United Kingdom"
+                - id: 8
+                  code: "IAH"
+                  name: "George Bush Intercontinental Airport"
+                  city: "Houston"
+                  country: "United States"
+                - id: 9
+                  code: "DFW"
+                  name: "Dallas/Fort Worth International Airport"
+                  city: "Dallas"
+                  country: "United States"
+                - id: 10
+                  code: "CAN"
+                  name: "Guangzhou Baiyun International Airport"
+                  city: "Guangzhou"
+                  country: "China"
+                # (Additional items omitted for brevity)
+  /api/cities:
+    get:
+      tags:
+        - Extra
+      summary: cities
+      description: Returns a list of cities.
+      responses:
+        '200':
+          description: "Cities list retrieved successfully."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    city:
+                      type: string
+                    country:
+                      type: string
+              example:
+                - id: 1
+                  city: "Atlanta"
+                  country: "United States"
+                - id: 2
+                  city: "Beijing"
+                  country: "China"
+                - id: 3
+                  city: "Los Angeles"
+                  country: "United States"
+                - id: 4
+                  city: "Dubai"
+                  country: "United Arab Emirates"
+                - id: 5
+                  city: "Tokyo"
+                  country: "Japan"
+                - id: 6
+                  city: "Chicago"
+                  country: "United States"
+                - id: 7
+                  city: "London"
+                  country: "United Kingdom"
+                - id: 8
+                  city: "Houston"
+                  country: "United States"
+                - id: 9
+                  city: "Dallas"
+                  country: "United States"
+                - id: 10
+                  city: "Guangzhou"
+                  country: "China"
+                # (Additional items omitted for brevity)
