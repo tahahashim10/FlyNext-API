@@ -70,6 +70,33 @@ export async function PUT(request, { params }) {
     const { id } = params;
     const { name, logo, address, location, starRating, images } = await request.json();
 
+    // Validate required fields (if provided)
+    if (name !== undefined && (typeof name !== "string" || name.trim() === "")) {
+      return NextResponse.json({ error: "Hotel name must be a non-empty string." }, { status: 400 });
+    }
+    if (address !== undefined && (typeof address !== "string" || address.trim() === "")) {
+      return NextResponse.json({ error: "Address must be a non-empty string." }, { status: 400 });
+    }
+    if (location !== undefined && (typeof location !== "string" || location.trim() === "")) {
+      return NextResponse.json({ error: "Location must be a non-empty string." }, { status: 400 });
+    }
+    if (starRating !== undefined && (isNaN(Number(starRating)) || Number(starRating) < 0)) {
+      return NextResponse.json({ error: "Star rating must be a valid non-negative number." }, { status: 400 });
+    }
+    if (logo !== undefined && logo !== "" && !isValidUrl(logo)) {
+      return NextResponse.json({ error: "Logo must be a valid URL." }, { status: 400 });
+    }
+    if (images !== undefined) {
+      if (!Array.isArray(images)) {
+        return NextResponse.json({ error: "Images must be provided as an array." }, { status: 400 });
+      }
+      for (const img of images) {
+        if (typeof img !== "string" || !isValidUrl(img)) {
+          return NextResponse.json({ error: "Each image must be a valid URL." }, { status: 400 });
+        }
+      }
+    }
+
     // Verify hotel exists
     const existingHotel = await prisma.hotel.findUnique({
       where: { id: parseInt(id) },
@@ -112,6 +139,10 @@ export async function DELETE(request, { params }) {
 
   try {
     const { id } = params;
+    const idNumber = Number(id);
+    if (isNaN(idNumber)) {
+      return NextResponse.json({ error: "Invalid hotel id. Must be a number." }, { status: 400 });
+    }
 
     // Verify hotel exists
     const existingHotel = await prisma.hotel.findUnique({
@@ -134,4 +165,10 @@ export async function DELETE(request, { params }) {
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+}
+
+// source: https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url
+function isValidUrl(string) {
+  const urlRegex = /^(https?:\/\/)[^\s/$.?#].[^\s]*$/i;
+  return urlRegex.test(string);
 }
