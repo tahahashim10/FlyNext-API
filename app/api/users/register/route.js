@@ -8,8 +8,24 @@ export async function POST(request) {
     try {
         const { firstName, lastName, email, password, phoneNumber, profilePicture, role } = await request.json();
 
-        if (!firstName || !lastName || !email || !password) {
-            return NextResponse.json({ error: "Username and password are required" }, { status: 400 });
+        // Validate required fields and types
+        if (!firstName || typeof firstName !== "string" || firstName.trim() === "") {
+            return NextResponse.json({ error: "First name is required and must be a non-empty string" }, { status: 400 });
+        }
+        if (!lastName || typeof lastName !== "string" || lastName.trim() === "") {
+            return NextResponse.json({ error: "Last name is required and must be a non-empty string" }, { status: 400 });
+        }
+        if (!email || typeof email !== "string" || email.trim() === "") {
+            return NextResponse.json({ error: "Email is required and must be a non-empty string" }, { status: 400 });
+        }
+        if (!password || typeof password !== "string" || password.trim() === "") {
+            return NextResponse.json({ error: "Password is required and must be a non-empty string" }, { status: 400 });
+        }
+        // validate email format with a regex
+        // source: https://stackoverflow.com/questions/46155/how-can-i-validate-an-email-address-in-javascript
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
         }
 
         // Check if the user already exists
