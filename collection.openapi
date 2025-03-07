@@ -210,7 +210,7 @@ paths:
     post:
       tags:
         - Accounts
-      summary: "login"
+      summary: "Login"
       description: "Logs in a user and returns JWT tokens."
       requestBody:
         content:
@@ -239,7 +239,7 @@ paths:
     put:
       tags:
         - Accounts
-      summary: users/[id]
+      summary: Update Profile
       description: Updates the user’s profile (name, phone, picture).
       parameters:
       - name: id
@@ -341,7 +341,7 @@ paths:
     get:
       tags:
         - Flights Search
-      summary: flights
+      summary: Search Flights
       description: Searches for flights based on origin, destination, and dates.
       parameters:
         - name: origin
@@ -399,7 +399,7 @@ paths:
     get:
       tags:
         - Flights Search
-      summary: flights/[id]
+      summary: Flight Details
       description: Retrieves detailed info for a specific flight.
       parameters:
         - name: id
@@ -513,7 +513,7 @@ paths:
     post:
       tags:
         - Hotel Management
-      summary: hotels
+      summary: Add Hotel
       description: Adds a new hotel with the provided details.
       requestBody:
         content:
@@ -554,7 +554,7 @@ paths:
     get:
       tags:
         - Hotel Search
-      summary: hotels
+      summary: Search Hotels
       description: >-
         Searches for hotels by check-in/check-out dates, city, name, and price
         range.
@@ -642,7 +642,7 @@ paths:
     put:
       tags:
         - Hotel Management
-      summary: hotels/[id]
+      summary: Update Hotel
       description: Updates an existing hotel’s information.
       parameters:
       - name: id
@@ -690,7 +690,7 @@ paths:
     get:
       tags:
         - Hotel Search
-      summary: hotels/[id]
+      summary: Hotel Info
       description: Retrieves detailed information for a specific hotel.
       parameters:
       - name: id
@@ -781,7 +781,7 @@ paths:
     delete:
       tags:
         - Hotel Management
-      summary: hotel/[id]
+      summary: Delete Hotel
       description: Deletes a hotel by its ID.
       parameters:
       - name: id
@@ -806,7 +806,7 @@ paths:
     post:
       tags:
         - Hotel Management
-      summary: roomTypes
+      summary: Create Room
       description: >-
         Creates a room type for a hotel (name, amenities, price, images, total
         rooms).
@@ -856,7 +856,7 @@ paths:
     get:
       tags:
         - Hotel Management
-      summary: roomTypes/[id]
+      summary: Room Info
       description: Gets details of a specific room type.
       parameters:
       - name: id
@@ -905,7 +905,7 @@ paths:
     put:
       tags:
         - Hotel Management
-      summary: roomTypes/[id]
+      summary: Update Room
       description: >-
         Updates details of a specific room type (name, amenities, price, images,
         total rooms).
@@ -961,7 +961,7 @@ paths:
     delete:
       tags:
         - Hotel Management
-      summary: roomTypes/[id]
+      summary: Delete Room
       description: Deletes a room type by its ID.
       parameters:
       - name: id
@@ -985,7 +985,7 @@ paths:
     get:
       tags:
         - Hotel Management
-      summary: bookings/owner
+      summary: Owner Bookings
       description: Retrieves owner bookings filtered by date range and room type.
       security:
         - bearerAuth: []
@@ -1133,7 +1133,7 @@ paths:
     post:
       tags:
         - Hotel Management
-      summary: bookings/[id]/cancel
+      summary: Cancel Booking
       description: Cancels a specific booking by its ID.
       parameters:
       - name: id
@@ -1166,7 +1166,7 @@ paths:
     get:
       tags:
         - Hotel Management
-      summary: hotels/availability
+      summary: Get Availability
       description: Returns room availability for a hotel based on a date range and room ID.
       security:
         - bearerAuth: []
@@ -1207,7 +1207,7 @@ paths:
     post:
       tags:
         - Hotel Management
-      summary: hotels/availability[id]
+      summary: Update Availability
       description: Updates available room count for a specific room type.
       parameters:
       - name: id
@@ -1324,7 +1324,7 @@ paths:
     post:
       tags:
         - Booking
-      summary: "Create booking"
+      summary: Create Booking
       description: "Creates a new booking with hotel, room, and flight details."
       security:
         - bearerAuth: []
@@ -1507,7 +1507,7 @@ paths:
     get:
       tags:
         - Booking
-      summary: "Get user bookings"
+      summary: User Bookings
       description: "Retrieves all bookings for the authenticated user."
       security:
         - bearerAuth: []
@@ -1595,7 +1595,7 @@ paths:
     patch:
       tags:
         - Booking
-      summary: "Cancel bookings"
+      summary: Cancel Bookings
       description: >
         Cancels bookings for the authenticated user.
         - To cancel a single booking, include `"bookingId": number`.
@@ -1629,7 +1629,7 @@ paths:
     post:
       tags:
         - Booking
-      summary: checkout
+      summary: Checkout
       description: Processes checkout for a booking using credit card details.
       requestBody:
         content:
@@ -1695,7 +1695,7 @@ paths:
     post:
       tags:
         - Booking
-      summary: suggestions
+      summary: Get Suggestions
       description: >-
         Returns booking suggestions for flights and hotels based on input
         criteria.
@@ -1763,7 +1763,7 @@ paths:
     get:
       tags:
         - Booking
-      summary: bookings/verifyFlight
+      summary: Verify Flight
       description: Verifies a flight booking using last name and booking reference.
       security:
         - bearerAuth: []
@@ -1903,7 +1903,7 @@ paths:
     get:
       tags:
         - Notifications
-      summary: notifications
+      summary: Get Notifications
       description: Fetches notifications for the authenticated user.
       security:
         - bearerAuth: []
@@ -1989,7 +1989,7 @@ paths:
     patch:
       tags:
         - Notifications
-      summary: notifications
+      summary: Mark Read
       description: Updates a notification (marks it as read) based on its ID.
       requestBody:
         content:
@@ -2033,7 +2033,7 @@ paths:
     get:
       tags:
         - Extra
-      summary: airports
+      summary: Get Airports
       description: Returns a list of airports.
       responses:
         '200':
@@ -2111,7 +2111,7 @@ paths:
     get:
       tags:
         - Extra
-      summary: cities
+      summary: Get Cities
       description: Returns a list of cities.
       responses:
         '200':
