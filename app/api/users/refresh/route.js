@@ -9,7 +9,7 @@ export async function POST(request) {
   try {
     const { refreshToken } = await request.json();
 
-    if (!refreshToken) {
+    if (!refreshToken || typeof refreshToken !== "string" || refreshToken.trim() === "") {
       return NextResponse.json({ error: "Refresh token is required" }, { status: 400 });
     }
 
