@@ -9,6 +9,30 @@ export async function GET(request) {
     return NextResponse.json({ error: "source, destination, and date are required" }, { status: 400 });
   }
 
+  // source: https://stackoverflow.com/questions/19577748/what-does-this-javascript-regular-expression-d-mean
+  if (/^\d+$/.test(origin)) {
+    return NextResponse.json({ error: "Origin must be a valid string" }, { status: 400 });
+  }
+  if (/^\d+$/.test(destination)) {
+    return NextResponse.json({ error: "Destination must be a valid string" }, { status: 400 });
+  }
+  
+  const trimmedOrigin = origin.trim();
+  const trimmedDestination = destination.trim();
+  if (!trimmedOrigin || !trimmedDestination) {
+    return NextResponse.json({ error: "origin and destination cannot be empty" }, { status: 400 });
+  }
+  const flightDate = new Date(date);
+  if (isNaN(flightDate.getTime())) {
+    return NextResponse.json({ error: "Invalid date format" }, { status: 400 });
+  }
+  if (returnDate) {
+    const returnFlightDate = new Date(returnDate);
+    if (isNaN(returnFlightDate.getTime())) {
+      return NextResponse.json({ error: "Invalid return date format" }, { status: 400 });
+    }
+  }
+
   // Build URL for AFS API
   const baseUrl = process.env.AFS_BASE_URL;
   // Get API key
