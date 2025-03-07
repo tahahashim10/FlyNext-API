@@ -126,9 +126,32 @@ export async function POST(request) {
   try {
     const { name, logo, address, location, starRating, images } = await request.json();
 
-    // Validate required fields (ownerId, name, address, location, starRating are required)
-    if (!name || !address || !location || starRating === undefined) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    // Validate required fields
+    if (typeof name !== 'string' || name.trim() === "") {
+        return NextResponse.json({ error: "Hotel name must be a non-empty string." }, { status: 400 });
+    }
+    if (typeof address !== 'string' || address.trim() === "") {
+        return NextResponse.json({ error: "Address must be a non-empty string." }, { status: 400 });
+    }
+    if (typeof location !== 'string' || location.trim() === "") {
+        return NextResponse.json({ error: "Location must be a non-empty string." }, { status: 400 });
+    }
+    if (starRating === undefined || isNaN(Number(starRating))) {
+        return NextResponse.json({ error: "Star rating must be a valid number." }, { status: 400 });
+    }
+
+    // check if optional parameters are provided, if they are then validate those too
+    if (logo && !isValidUrl(logo)) {
+        return NextResponse.json({ error: "Logo must be a valid URL." }, { status: 400 });
+    }
+    if (images && Array.isArray(images)) {
+        for (const img of images) {
+            if (!isValidUrl(img)) {
+                return NextResponse.json({ error: "All images must be valid URLs." }, { status: 400 });
+            }
+        }
+    } else if (images) {
+        return NextResponse.json({ error: "Images must be provided as an array." }, { status: 400 });
     }
 
     // The authenticated user will become the owner of the hotel
@@ -155,3 +178,10 @@ export async function POST(request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+// source: https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url
+function isValidUrl(string) {
+    const urlRegex = /^(https?:\/\/)[^\s/$.?#].[^\s]*$/i;
+    return urlRegex.test(string);
+}
+  
