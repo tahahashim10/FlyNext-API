@@ -13,8 +13,21 @@ export async function POST(request) {
 
   try {
     
-    if (!email || !password || typeof(email) !== "string" || typeof(password) !== "string") {
-        return NextResponse.json({ error: "Missing or invalid email or password" }, { status: 400 });
+    // Validate input: check existence, type, and that they're not empty after trimming.
+    if (
+      !email || typeof email !== "string" || email.trim() === "" ||
+      !password || typeof password !== "string" || password.trim() === ""
+    ) {
+      return NextResponse.json(
+        { error: "Missing or invalid email or password" },
+        { status: 400 }
+      );
+    }
+
+    // source: https://stackoverflow.com/questions/46155/how-can-i-validate-an-email-address-in-javascript
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
     }
     
     const user = await prisma.user.findUnique({ 
