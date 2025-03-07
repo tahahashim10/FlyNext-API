@@ -4,13 +4,31 @@ import { addLayoverInfo, minimalFlightInfo } from "@/utils/flightUtils";
 
 export async function GET(request, { params }) {
   const { id } = params;
-  if (!id) {
-    return NextResponse.json({ error: "Flight ID required" }, { status: 400 });
+  if (!id || typeof id !== "string" || id.trim() === "") {
+    return NextResponse.json({ error: "Valid Flight ID required" }, { status: 400 });
   }
-
+  
   const { origin, destination, date } = getSearchParams(request);
   if (!origin || !destination || !date) {
     return NextResponse.json({ error: "source, destination, and date are required" }, { status: 400 });
+  }
+
+  // source: https://stackoverflow.com/questions/19577748/what-does-this-javascript-regular-expression-d-mean
+  if (/^\d+$/.test(origin)) {
+    return NextResponse.json({ error: "Invalid origin: must be a valid city or airport name." }, { status: 400 });
+  }
+  if (/^\d+$/.test(destination)) {
+    return NextResponse.json({ error: "Invalid destination: must be a valid city or airport name." }, { status: 400 });
+  }
+  
+  const trimmedOrigin = origin.trim();
+  const trimmedDestination = destination.trim();
+  if (!trimmedOrigin || !trimmedDestination) {
+    return NextResponse.json({ error: "origin and destination cannot be empty" }, { status: 400 });
+  }
+  const flightDate = new Date(date);
+  if (isNaN(flightDate.getTime())) {
+    return NextResponse.json({ error: "Invalid date format" }, { status: 400 });
   }
 
   // Build URL for AFS API
