@@ -11,10 +11,10 @@ export async function GET(request) {
 
   // source: https://stackoverflow.com/questions/19577748/what-does-this-javascript-regular-expression-d-mean
   if (/^\d+$/.test(origin)) {
-    return NextResponse.json({ error: "Origin must be a valid string" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid origin: must be a valid city or airport name." }, { status: 400 });
   }
   if (/^\d+$/.test(destination)) {
-    return NextResponse.json({ error: "Destination must be a valid string" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid destination: must be a valid city or airport name." }, { status: 400 });
   }
   
   const trimmedOrigin = origin.trim();
@@ -61,7 +61,13 @@ export async function GET(request) {
 
   try {
     // from origin to destination on the specified date
-    const flightThereTemp = await callAfs(origin, destination, date);
+    let flightThereTemp;
+    try {
+      flightThereTemp = await callAfs(origin, destination, date);
+    } catch (error) {
+      return NextResponse.json({ error: "Unable to retrieve flight data. Please ensure that the origin and destination are valid city names or airport codes." }, { status: 400 });
+    }
+    
     // first add layover info then reduce each flight group to minimal info
     const flightThere = { results: flightThereTemp.results.map(addLayoverInfo).map(minimalFlightInfo), };
     /* 
@@ -74,7 +80,13 @@ export async function GET(request) {
     // if returnDate exists then swap origin and destination
     let flightBack = null;
     if (returnDate) {
-        const flightBackTemp = await callAfs(destination, origin, returnDate);
+        let flightBackTemp;
+        try {
+          flightBackTemp = await callAfs(destination, origin, returnDate);
+        } catch (error) {
+          return NextResponse.json({ error: "Unable to retrieve flight data. Please ensure that the origin and destination are valid city names or airport codes." }, { status: 400 });
+        }
+        
         flightBack = { results: flightBackTemp.results.map(addLayoverInfo).map(minimalFlightInfo), };
         
     }
