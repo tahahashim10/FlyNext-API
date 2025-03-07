@@ -1,4 +1,3 @@
-// scripts/fetchCitiesAirports.js
 import { PrismaClient } from '@prisma/client';
 import fetch from 'node-fetch';
 
@@ -35,7 +34,7 @@ async function main() {
   const citiesData = await fetchCities();     // Array of { city, country }
   const airportsData = await fetchAirports(); // Array of { id, code, name, city, country }
 
-  // 3) Insert into your local DB
+  // 3) Insert into the local DB
   await prisma.city.createMany({
     data: citiesData.map((c) => ({
       city: c.city,
