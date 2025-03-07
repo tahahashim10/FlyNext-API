@@ -52,7 +52,9 @@
 									"if (response.accessToken) {\r",
 									"  pm.collectionVariables.set(\"token\", response.accessToken);\r",
 									"}\r",
-									""
+									"if (response.refreshToken) {\r",
+									"  pm.collectionVariables.set(\"refreshToken\", response.refreshToken);\r",
+									"}"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -133,6 +135,52 @@
 							]
 						},
 						"description": "Updates the user’s profile (name, phone, picture)."
+					},
+					"response": []
+				},
+				{
+					"name": "users/refresh",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();\r",
+									"if (response.accessToken) {\r",
+									"  pm.collectionVariables.set(\"token\", response.accessToken);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzQxMzIyMjQ5LCJleHAiOjE3NDEzMjMxNDl9.NeWSjN24Cj5pg1i5oLrwxjIuZ5Eqhatbq9drFEREAVc\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/users/refresh",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"users",
+								"refresh"
+							]
+						},
+						"description": "Accepts a valid refresh token and returns a new access token. Use this endpoint to extend the user's session when the access token expires."
 					},
 					"response": []
 				}
@@ -800,6 +848,79 @@
 					"response": []
 				},
 				{
+					"name": "bookings/user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/bookings/user",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"bookings",
+								"user"
+							]
+						},
+						"description": "Retrieves all bookings for the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "bookings/user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \r\n    \"bookingIds\": [1, 2, 3] \r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/bookings/user",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"bookings",
+								"user"
+							]
+						},
+						"description": "Cancels bookings for the authenticated user.\n\n- To cancel a single booking, include `\"bookingId\": number` in the request body.\n    \n- To cancel multiple bookings, include `\"bookingIds\": [number, ...]`.\n    \n- To cancel all active bookings, include `\"cancelAll\": true`."
+					},
+					"response": []
+				},
+				{
 					"name": "checkout",
 					"request": {
 						"auth": {
@@ -916,79 +1037,6 @@
 							]
 						},
 						"description": "Generates a PDF invoice for a specified booking."
-					},
-					"response": []
-				},
-				{
-					"name": "bookings/user",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:3000/api/bookings/user",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3000",
-							"path": [
-								"api",
-								"bookings",
-								"user"
-							]
-						},
-						"description": "Retrieves all bookings for the authenticated user."
-					},
-					"response": []
-				},
-				{
-					"name": "bookings/user",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{ \r\n    \"bookingIds\": [1, 2, 3] \r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:3000/api/bookings/user",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3000",
-							"path": [
-								"api",
-								"bookings",
-								"user"
-							]
-						},
-						"description": "Cancels bookings for the authenticated user.\n\n- To cancel a single booking, include `\"bookingId\": number` in the request body.\n    \n- To cancel multiple bookings, include `\"bookingIds\": [number, ...]`.\n    \n- To cancel all active bookings, include `\"cancelAll\": true`."
 					},
 					"response": []
 				},
@@ -1187,6 +1235,10 @@
 			"key": "token",
 			"value": "",
 			"type": "string"
+		},
+		{
+			"key": "refreshToken",
+			"value": ""
 		}
 	]
 }
