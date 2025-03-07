@@ -39,7 +39,7 @@ export async function POST(request) {
     }
     
     const payload = { userId: user.id, email: user.email, role: user.role };
-    const accessToken = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m" });
+    const accessToken = jwt.sign(payload, SECRET_KEY, { expiresIn: "30m" });
     const refreshToken = jwt.sign(payload, SECRET_KEY, { expiresIn: "7d" });
 
     return NextResponse.json({ accessToken, refreshToken }, { status: 200 });
