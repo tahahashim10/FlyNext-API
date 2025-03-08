@@ -5,21 +5,27 @@ import { getSearchParams } from "@/utils/query";
 // don't add verification token because this user story is for visitors (U14)
 export async function GET(request, { params }) {
     const { id } = await params; 
-    if (!id) {
-        return NextResponse.json({ error: "Hotel ID required" }, { status: 400 });
+    if (!id || isNaN(Number(id))) {
+        return NextResponse.json({ error: "Valid Hotel ID is required" }, { status: 400 });
     }
 
     const { checkIn, checkOut } = getSearchParams(request);
 
     if (!checkIn || !checkOut) {
-        return NextResponse.json({ error: "checkIn and checkOut dates required" }, { status: 400 });
+        return NextResponse.json({ error: "checkIn and checkOut dates are required" }, { status: 400 });
     }
 
-    if (new Date(checkIn) >= new Date(checkOut)) {
-        return NextResponse.json({ error: "Invalid checkIn/checkOut dates" }, { status: 400 });
-    }
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
+
+    if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+        return NextResponse.json({ error: "Invalid date format. Use YYYY-MM-DD." }, { status: 400 });
+    }
+    
+    if (checkInDate >= checkOutDate) {
+        return NextResponse.json({ error: "Invalid checkIn/checkOut dates: checkIn must be before checkOut" }, { status: 400 });
+    }
+    
 
     try {
         // find room types for the given hotel id
