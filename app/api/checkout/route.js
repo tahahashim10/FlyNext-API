@@ -14,17 +14,38 @@ export async function POST(request) {
   try {
     const { bookingId, cardNumber, expiryMonth, expiryYear } = await request.json();
 
-    if (!bookingId || !cardNumber || !expiryMonth || !expiryYear) {
+    // Check for required fields
+    if (bookingId === undefined || !cardNumber || expiryMonth === undefined || expiryYear === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Validate bookingId is a number
+    const parsedBookingId = Number(bookingId);
+    if (isNaN(parsedBookingId)) {
+      return NextResponse.json({ error: "bookingId must be a number" }, { status: 400 });
+    }
+
+    // Validate cardNumber is a non-empty string
+    if (typeof cardNumber !== "string" || cardNumber.trim() === "") {
+      return NextResponse.json({ error: "Invalid card number" }, { status: 400 });
+    }
+
+    // Validate expiryMonth is a number between 1 and 12
+    if (typeof expiryMonth !== "number" || expiryMonth < 1 || expiryMonth > 12) {
+      return NextResponse.json({ error: "Invalid expiry month" }, { status: 400 });
+    }
+
+    // Validate expiryYear is a number and (via isValidExpiry) in the future
+    if (typeof expiryYear !== "number") {
+      return NextResponse.json({ error: "expiryYear must be a number" }, { status: 400 });
+    }
+    if (!isValidExpiry(expiryMonth, expiryYear)) {
+      return NextResponse.json({ error: "Expired card" }, { status: 400 });
     }
 
     // Validate card number and expiry date
     if (!isValidCardNumber(cardNumber)) {
       return NextResponse.json({ error: "Invalid credit card number" }, { status: 400 });
-    }
-
-    if (!isValidExpiry(expiryMonth, expiryYear)) {
-      return NextResponse.json({ error: "Expired card" }, { status: 400 });
     }
 
     // Find the booking
