@@ -12,12 +12,32 @@ export async function GET(request) {
         return NextResponse.json({ error: "checkIn, checkOut, and city are required" }, { status: 400 });
     }
 
-    if (new Date(checkIn) >= new Date(checkOut)) {
+    // Validate dates
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+        return NextResponse.json({ error: "Invalid date format. Use YYYY-MM-DD." }, { status: 400 });
+    }
+    if (checkInDate >= checkOutDate) {
         return NextResponse.json({ error: "Invalid check-in/check-out dates" }, { status: 400 });
     }
 
-    const checkInDate = new Date(checkIn);
-    const checkOutDate = new Date(checkOut);
+    if (typeof city !== "string" || city.trim() === "") {
+        return NextResponse.json({ error: "City must be a non-empty string." }, { status: 400 });
+    }
+    if (name !== undefined && (typeof name !== "string" || name.trim() === "")) {
+        return NextResponse.json({ error: "Name must be a non-empty string if provided." }, { status: 400 });
+    }
+
+    if (starRating !== undefined && isNaN(Number(starRating))) {
+        return NextResponse.json({ error: "starRating must be a valid number." }, { status: 400 });
+    }
+    if (minPrice !== undefined && isNaN(Number(minPrice))) {
+        return NextResponse.json({ error: "minPrice must be a valid number." }, { status: 400 });
+    }
+    if (maxPrice !== undefined && isNaN(Number(maxPrice))) {
+        return NextResponse.json({ error: "maxPrice must be a valid number." }, { status: 400 });
+    }
   
 
     // From Exercise 4
@@ -39,7 +59,7 @@ export async function GET(request) {
                         where: { 
                             availableRooms: { gt: 0 }, // gt: 0 => greater than 0
                             pricePerNight: { gte: Number(minPrice), lte: Number(maxPrice) }, // gte is >=, lte is <=
-                            bookings: { // only include rooms that dont have overlapping bookings
+                            bookings: { // only include rooms that don't have overlapping bookings
                                 none: {
                                     checkIn: { lt: checkOutDate },
                                     checkOut: { gt: checkInDate },
@@ -57,7 +77,7 @@ export async function GET(request) {
                     rooms: {
                         where: { 
                             availableRooms: { gt: 0 },
-                            bookings: { // only include rooms that dont have overlapping bookings
+                            bookings: { // only include rooms that don't have overlapping bookings
                                 none: {
                                     checkIn: { lt: checkOutDate },
                                     checkOut: { gt: checkInDate },
