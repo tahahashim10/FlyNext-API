@@ -24,11 +24,46 @@ export async function GET(request) {
 export async function PATCH(request) {
   const tokenData = verifyToken(request);
   if (!tokenData) {
-    return NextResponse.json({ error: "Unauthorized: Token missing or invalid." }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const body = await request.json();
+
+    const hasSingleCancellation = body.bookingId !== undefined || body.bookingType !== undefined;
+    const hasBulkCancellation = body.hotelBookingIds !== undefined || body.flightBookingIds !== undefined;
+    const hasCancelAll = body.cancelAll !== undefined;
+
+    if ((hasSingleCancellation && (hasBulkCancellation || hasCancelAll)) ||
+        (hasBulkCancellation && (hasSingleCancellation || hasCancelAll)) ||
+        (hasCancelAll && (hasSingleCancellation || hasBulkCancellation))) {
+      return NextResponse.json(
+        { error: "Please provide only one cancellation method: single cancellation (bookingId and bookingType), bulk cancellation (hotelBookingIds and/or flightBookingIds), or cancelAll." },
+        { status: 400 }
+      );
+    }
+
+
+    // Validate hotelBookingIds: must be an array of numbers.
+    if (body.hotelBookingIds) {
+      if (!Array.isArray(body.hotelBookingIds) || !body.hotelBookingIds.every(item => !isNaN(Number(item)))) {
+        return NextResponse.json(
+          { error: "hotelBookingIds must be an array of numbers." },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate flightBookingIds: must be an array of numbers.
+    if (body.flightBookingIds) {
+      if (!Array.isArray(body.flightBookingIds) || !body.flightBookingIds.every(item => !isNaN(Number(item)))) {
+        return NextResponse.json(
+          { error: "flightBookingIds must be an array of numbers." },
+          { status: 400 }
+        );
+      }
+    }
+
 
     // Handle cancelAll option
     if (body.cancelAll) {
