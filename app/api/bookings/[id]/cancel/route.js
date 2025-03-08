@@ -44,7 +44,7 @@ export async function POST(request, { params }) {
     await prisma.notification.create({
       data: {
         userId: updatedBooking.userId,
-        message: `Your booking at ${booking.hotel.name} has been canceled by the hotel owner.`,
+        message: `Your booking at ${booking.hotel.name} has been canceled by the hotel owner. Please contact the hotel for further assistance.`,
       },
     });
 
