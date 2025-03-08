@@ -72,6 +72,12 @@ export async function GET(request, { params }) {
     return NextResponse.json(matchingFlight, { status: 200 });
   } catch (error) {
     console.error("Error retrieving flight details:", error);
+    if (error.message.includes("AFS API error: 400")) {
+      return NextResponse.json(
+        { error: "Unable to retrieve flight data. Please ensure that the origin and destination are valid city names or airport codes." },
+        { status: 400 }
+      );
+    }
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
