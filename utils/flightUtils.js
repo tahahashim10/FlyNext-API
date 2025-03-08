@@ -15,11 +15,14 @@ export function addLayoverInfo(flightGroup) {
 export function minimalFlightInfo(flightGroup) {
   return {
     legs: flightGroup.legs,
-    flights: flightGroup.flights.map(({ departureTime, arrivalTime, duration }) => ({
+    flights: flightGroup.flights.map(({ id, airline, departureTime, arrivalTime, duration, price }) => ({
+      id,
+      airline,
       departureTime,
       arrivalTime,
       duration,
+      price,
     })),
-    ...(flightGroup.layover !== undefined && { layover: flightGroup.layover }), // If flightGroup.layover exists { layover: flightGroup.layover } is added to result
+    ...(flightGroup.layover !== undefined && { layover: flightGroup.layover }),
   };
 }

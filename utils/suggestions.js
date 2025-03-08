@@ -15,7 +15,7 @@ export async function getSuggestedHotels(city) {
 }
 
 //accepts an optional suggestedDate parameter.
-export async function getSuggestedFlights(destinationCity, departureCity = "Toronto", suggestedDate) {
+export async function getSuggestedFlights(destinationCity, departureCity = "Toronto", suggestedDate) { // * note: default departureCity is Toronto
   const baseUrl = process.env.AFS_BASE_URL;
   const apiKey = process.env.AFS_API_KEY;
   if (!baseUrl || !apiKey) {
