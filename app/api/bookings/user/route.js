@@ -153,6 +153,60 @@ export async function POST(request) {
     // The userId is taken from the token
     const userId = tokenData.userId;
 
+    // Validate hotel booking inputs if provided
+    if ((hotelId !== undefined || roomId !== undefined) && (hotelId === undefined || roomId === undefined)) {
+      return NextResponse.json({ error: "Both hotelId and roomId must be provided for a hotel reservation." }, { status: 400 });
+    }
+    if (hotelId !== undefined && typeof hotelId !== "number") {
+      return NextResponse.json({ error: "hotelId must be a number." }, { status: 400 });
+    }
+    if (roomId !== undefined && typeof roomId !== "number") {
+      return NextResponse.json({ error: "roomId must be a number." }, { status: 400 });
+    }
+    if ((checkIn || checkOut) && (!checkIn || !checkOut)) {
+      return NextResponse.json({ error: "Both checkIn and checkOut dates must be provided." }, { status: 400 });
+    }
+    if (checkIn && checkOut) {
+      const checkInDate = new Date(checkIn);
+      const checkOutDate = new Date(checkOut);
+      if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+        return NextResponse.json({ error: "Invalid date format for checkIn or checkOut. Use YYYY-MM-DD." }, { status: 400 });
+      }
+      if (checkInDate >= checkOutDate) {
+        return NextResponse.json({ error: "checkIn must be before checkOut." }, { status: 400 });
+      }
+    }
+
+    // Validate flight booking inputs if flightIds provided
+    if (flightIds !== undefined) {
+      if (!Array.isArray(flightIds)) {
+        return NextResponse.json({ error: "flightIds must be an array." }, { status: 400 });
+      }
+      if (flightIds.length > 0) {
+        if (!firstName || typeof firstName !== "string" || firstName.trim() === "") {
+          return NextResponse.json({ error: "firstName is required and must be a non-empty string for flight booking." }, { status: 400 });
+        }
+        if (!lastName || typeof lastName !== "string" || lastName.trim() === "") {
+          return NextResponse.json({ error: "lastName is required and must be a non-empty string for flight booking." }, { status: 400 });
+        }
+        if (!email || typeof email !== "string" || email.trim() === "") {
+          return NextResponse.json({ error: "email is required and must be a non-empty string for flight booking." }, { status: 400 });
+        }
+        if (!passportNumber || typeof passportNumber !== "string" || passportNumber.trim() === "") {
+          return NextResponse.json({ error: "passportNumber is required and must be a non-empty string for flight booking." }, { status: 400 });
+        }
+      }
+    }
+
+    // Check that at least one booking type is provided:
+    const isHotelBookingRequested = hotelId && roomId;
+    const isFlightBookingRequested = flightIds && Array.isArray(flightIds) && flightIds.length > 0;
+
+    if (!isHotelBookingRequested && !isFlightBookingRequested) {
+      return NextResponse.json({ error: "At least one booking type (hotel or flight) must be provided." }, { status: 400 });
+    }
+
+
     let hotelBooking = null;
     let hotelRecord = null; // We'll use this to access hotel details for the notification.
     if (hotelId && roomId) {
