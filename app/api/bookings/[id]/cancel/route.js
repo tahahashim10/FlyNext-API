@@ -9,8 +9,12 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { id } = params;
+  if (!id || isNaN(parseInt(id))) {
+    return NextResponse.json({ error: "Valid booking ID is required in the path" }, { status: 400 });
+  }
+
   try {
-    const { id } = params;
 
     // Find the booking
     const booking = await prisma.booking.findUnique({
@@ -24,6 +28,11 @@ export async function POST(request, { params }) {
     // check that the booking's hotel belongs to the provided owner.
     if (!booking.hotel || booking.hotel.ownerId !== tokenData.userId) {
       return NextResponse.json({ error: "Forbidden: This booking does not belong to your hotel" }, { status: 403 });
+    }
+
+    // Check if the booking is already cancelled
+    if (booking.status === "CANCELED") {
+      return NextResponse.json({ error: "Booking is already cancelled" }, { status: 400 });
     }
     // Update status to "CANCELED"
     const updatedBooking = await prisma.booking.update({
