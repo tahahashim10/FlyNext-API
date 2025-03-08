@@ -76,8 +76,8 @@ model Room {
 model Booking {
   id         Int        @id @default(autoincrement())
   userId     Int
-  hotelId    Int?         // can still be null if only a flight is booked
-  roomId     Int?         // can still be null if only a flight is booked
+  hotelId    Int      
+  roomId     Int
   checkIn    DateTime?
   checkOut   DateTime?
   status     BookingStatus @default(CONFIRMED)

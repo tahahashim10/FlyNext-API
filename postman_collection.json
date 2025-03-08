@@ -602,7 +602,7 @@
 								"cancel"
 							]
 						},
-						"description": "Cancels a specific booking by its ID."
+						"description": "Cancels a specific hotel booking by its ID."
 					},
 					"response": []
 				},
@@ -823,7 +823,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"hotelId\": 1,\r\n  \"roomId\": 1,\r\n  \"checkIn\": \"2025-03-06\",\r\n  \"checkOut\": \"2025-03-08\",\r\n  \"flightIds\": [\"3742c9e4-1861-4ab8-8140-81870b19f100\"],\r\n  \"firstName\": \"Alice\",\r\n  \"lastName\": \"Doe\",\r\n  \"email\": \"alice@example.com\",\r\n  \"passportNumber\": \"A12345678\"\r\n}\r\n",
+							"raw": "{\r\n  \"hotelId\": 1,\r\n  \"roomId\": 1,\r\n  \"checkIn\": \"2025-04-15\",\r\n  \"checkOut\": \"2025-04-18\",\r\n  \"flightIds\": [\"9383ba28-71a6-4493-8849-a5d0c5ae7802\"],\r\n  \"firstName\": \"John\",\r\n  \"lastName\": \"Doe\",\r\n  \"email\": \"john@example.com\",\r\n  \"passportNumber\": \"A12345678\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -896,7 +896,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{ \r\n    \"bookingIds\": [1, 2, 3] \r\n}\r\n",
+							"raw": "{\r\n  \"hotelBookingIds\": [1, 2],\r\n  \"flightBookingIds\": [1, 2]\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -916,7 +916,7 @@
 								"user"
 							]
 						},
-						"description": "Cancels bookings for the authenticated user.\n\n- To cancel a single booking, include `\"bookingId\": number` in the request body.\n    \n- To cancel multiple bookings, include `\"bookingIds\": [number, ...]`.\n    \n- To cancel all active bookings, include `\"cancelAll\": true`."
+						"description": "Cancels bookings for the authenticated user.\n\n- To cancel all active bookings, include `\"cancelAll\": true`.\n    \n- To cancel multiple hotel bookings, include `\"hotelBookingIds\": [number, ...]`.\n    \n- To cancel multiple flight bookings, include `\"flightBookingIds\": [number, ...]`.\n    \n- To cancel a single booking, include both `\"bookingId\": number` and `\"bookingType\": \"hotel\" | \"flight\"`."
 					},
 					"response": []
 				},
@@ -937,7 +937,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"bookingId\": 1,\r\n  \"cardNumber\": \"4539578763621486\",\r\n  \"expiryMonth\": 12,\r\n  \"expiryYear\": 2026\r\n}\r\n",
+							"raw": "{\r\n  \"bookingId\": 1,\r\n  \"bookingType\": \"hotel\",\r\n  \"cardNumber\": \"4539578763621486\",\r\n  \"expiryMonth\": 12,\r\n  \"expiryYear\": 2026\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -956,7 +956,7 @@
 								"checkout"
 							]
 						},
-						"description": "Processes checkout for a booking using credit card details."
+						"description": "Processes checkout for a booking using credit card details.\n\n- `bookingType` specifies which type of booking to checkout - use `\"hotel\"` for hotel bookings and `\"flight\"` for flight bookings."
 					},
 					"response": []
 				},
@@ -1017,7 +1017,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"bookingId\": 1\r\n}",
+							"raw": "{\r\n  \"bookingId\": 1,\r\n  \"bookingType\": \"flight\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1036,7 +1036,7 @@
 								"invoice"
 							]
 						},
-						"description": "Generates a PDF invoice for a specified booking."
+						"description": "Generates a PDF invoice for a specified booking.\n\n- `bookingType` specifies which type of invoice to print—use `\"hotel\"` for hotel bookings and `\"flight\"` for flight bookings."
 					},
 					"response": []
 				},
