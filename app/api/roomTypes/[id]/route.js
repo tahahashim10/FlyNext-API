@@ -9,8 +9,14 @@ export async function GET(request, { params }) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { id } = params;
+
+  if (!id || isNaN(id)) {
+    return NextResponse.json({ error: "Valid room ID is required" }, { status: 400 });
+  }
+
   try {
-    const { id } = params;
+    
     // Retrieve room with its associated hotel
     const room = await prisma.room.findUnique({
       where: { id: parseInt(id) },
@@ -38,9 +44,60 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { id } = params;
+
+  if (!id || isNaN(id)) {
+    return NextResponse.json({ error: "Valid room ID is required" }, { status: 400 });
+  }
+
   try {
-    const { id } = params;
+
     const { name, amenities, pricePerNight, images, availableRooms } = await request.json();
+
+    // Ensure at least one field is provided for update
+    if (
+      name === undefined &&
+      amenities === undefined &&
+      pricePerNight === undefined &&
+      images === undefined &&
+      availableRooms === undefined
+    ) {
+      return NextResponse.json({ error: "At least one field must be provided for update" }, { status: 400 });
+    }
+
+    // Validate each input if provided
+    if (name !== undefined && (typeof name !== "string" || name.trim() === "")) {
+      return NextResponse.json({ error: "Room name must be a non-empty string." }, { status: 400 });
+    }
+    if (amenities !== undefined) {
+      if (!Array.isArray(amenities)) {
+        return NextResponse.json({ error: "Amenities must be provided as an array." }, { status: 400 });
+      }
+      for (const amenity of amenities) {
+        if (typeof amenity !== "string") {
+          return NextResponse.json({ error: "Each amenity must be a string." }, { status: 400 });
+        }
+      }
+    }
+    if (pricePerNight !== undefined && typeof pricePerNight !== "number") {
+      return NextResponse.json({ error: "pricePerNight must be a number." }, { status: 400 });
+    }
+    if (availableRooms !== undefined && typeof availableRooms !== "number") {
+      return NextResponse.json({ error: "availableRooms must be a number." }, { status: 400 });
+    }
+    if (images !== undefined) {
+      if (!Array.isArray(images)) {
+        return NextResponse.json({ error: "Images must be provided as an array." }, { status: 400 });
+      }
+      for (const img of images) {
+        if (typeof img !== "string") {
+          return NextResponse.json({ error: "Each image URL must be a string." }, { status: 400 });
+        }
+        if (!isValidUrl(img)) {
+          return NextResponse.json({ error: "Each image must be a valid URL." }, { status: 400 });
+        }
+      }
+    }
 
     // Check if the room exists (with its hotel)
     const existingRoom = await prisma.room.findUnique({
@@ -83,6 +140,9 @@ export async function DELETE(request, { params }) {
 
   try {
     const { id } = params;
+    if (!id || isNaN(id)) {
+      return NextResponse.json({ error: "Valid room ID is required" }, { status: 400 });
+    }
 
     // Check if the room exists (with its hotel)
     const existingRoom = await prisma.room.findUnique({
@@ -106,4 +166,10 @@ export async function DELETE(request, { params }) {
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+}
+
+// source: https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url
+function isValidUrl(string) {
+  const urlRegex = /^(https?:\/\/)[^\s/$.?#].[^\s]*$/i;
+  return urlRegex.test(string);
 }
