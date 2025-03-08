@@ -78,6 +78,10 @@ export async function POST(request) {
     if (booking.status === "CONFIRMED") {
       return NextResponse.json({ error: "Booking is already confirmed." }, { status: 400 });
     }
+    // **Add check to ensure the booking is pending**
+    if (booking.status !== "PENDING") {
+      return NextResponse.json({ error: "Only pending bookings can be checked out." }, { status: 400 });
+    }
 
     // Mark the booking as confirmed in the appropriate table.
     if (bookingType === "hotel") {
