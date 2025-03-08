@@ -378,11 +378,19 @@ export async function POST(request) {
           flightIds,
         });
       } catch (error) {
-        // If AFS returns a client error (400 or 404), pass that back to the client.
-        if (error.message.includes("AFS booking API error: 400") || error.message.includes("AFS booking API error: 404")) {
-          return NextResponse.json({ error: error.message }, { status: 400 });
+        if (error.message.includes("No available seats")) {
+          return NextResponse.json(
+            { error: "Flight booking failed: No available seats on the selected flight." },
+            { status: 400 }
+          );
         }
-        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+        if (error.message.includes("AFS booking API error: 400") || error.message.includes("AFS booking API error: 404")) {
+          return NextResponse.json(
+            { error: "Flight booking failed due to invalid input." },
+            { status: 400 }
+          );
+        }
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
       }
       
       // Create a flight booking record in the FlightBooking table.
