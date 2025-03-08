@@ -32,11 +32,14 @@ export async function GET(request) {
     // Validate date formats
     const start = new Date(startDate);
     const end = new Date(endDate);
-    if (isNaN(start) || isNaN(end)) {
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       return NextResponse.json(
         { error: 'Invalid date format. Please use YYYY-MM-DD for startDate and endDate.' },
         { status: 400 }
       );
+    }
+    if (start >= end) {
+      return NextResponse.json({ error: 'startDate must be before endDate.' }, { status: 400 });
     }
 
     // Validate roomId is a number
