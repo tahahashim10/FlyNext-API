@@ -30,6 +30,60 @@ export async function PATCH(request) {
   try {
     const body = await request.json();
 
+    // Handle cancelAll option
+    if (body.cancelAll) {
+      const hotelBookings = await prisma.booking.findMany({
+        where: {
+          userId: tokenData.userId,
+          status: { not: 'CANCELED' },
+        },
+      });
+
+      const flightBookings = await prisma.flightBooking.findMany({
+        where: {
+          userId: tokenData.userId,
+          status: { not: 'CANCELED' },
+        },
+      });
+
+      if (hotelBookings.length === 0 && flightBookings.length === 0) {
+        return NextResponse.json(
+          { message: "No active bookings found to cancel." },
+          { status: 200 }
+        );
+      }
+
+      const hotelUpdated = hotelBookings.length > 0
+        ? await prisma.booking.updateMany({
+            where: {
+              id: { in: hotelBookings.map(b => b.id) },
+              status: { not: 'CANCELED' },
+            },
+            data: { status: 'CANCELED' },
+          })
+        : { count: 0 };
+
+      const flightUpdated = flightBookings.length > 0
+        ? await prisma.flightBooking.updateMany({
+            where: {
+              id: { in: flightBookings.map(b => b.id) },
+              status: { not: 'CANCELED' },
+            },
+            data: { status: 'CANCELED' },
+          })
+        : { count: 0 };
+
+      const totalCanceled = hotelUpdated.count + flightUpdated.count;
+      await prisma.notification.create({
+        data: {
+          userId: tokenData.userId,
+          message: `All your active bookings have been canceled successfully.`,
+        },
+      });
+
+      return NextResponse.json({ message: 'All bookings cancelled', count: totalCanceled }, { status: 200 });
+    }
+
     // Bulk Cancellation: Expect separate arrays for hotel and flight booking IDs.
     if (body.hotelBookingIds || body.flightBookingIds) {
       const hotelBookingIds = body.hotelBookingIds && Array.isArray(body.hotelBookingIds)
