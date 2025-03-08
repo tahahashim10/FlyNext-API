@@ -11,12 +11,18 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Validate the room ID parameter
+  const { id } = params;
+  const roomId = parseInt(id);
+  if (!id || isNaN(roomId)) {
+    return NextResponse.json({ error: "Valid room ID is required" }, { status: 400 });
+  }
+
   try {
-    const { id } = await params;
     const { availableRooms: newAvailable } = await request.json();
 
-    if (newAvailable === undefined) {
-      return NextResponse.json({ error: "availableRooms is required" }, { status: 400 });
+    if (newAvailable === undefined || typeof newAvailable !== 'number') {
+      return NextResponse.json({ error: "availableRooms is required and must be a number" }, { status: 400 });
     }
 
     const room = await prisma.room.findUnique({
@@ -40,7 +46,7 @@ export async function POST(request, { params }) {
       const confirmedBookings = await prisma.booking.findMany({
         where: {
           roomId: room.id,
-          status: 'CONFIRMED'
+          status: 'CONFIRMED'  // * important: we don't cancel bookings that are pending payment, we only cancel confirmed bookings
         },
         orderBy: {
           checkIn: 'desc'
@@ -54,7 +60,7 @@ export async function POST(request, { params }) {
           bookingsToCancel.map(async (booking) => {
             const updatedBooking = await prisma.booking.update({
               where: { id: booking.id },
-              data: { status: "CANCELED" },
+              data: { status: "CANCELED" }, 
             });
             // U22: Notify the user about the cancellation due to reduced availability
             await prisma.notification.create({
