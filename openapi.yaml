@@ -1368,7 +1368,7 @@ paths:
     get:
       tags:
         - Hotel Search
-      summary: hotels/[id]/rooms
+      summary: Search Rooms
       description: >-
         Gets available room details for a hotel for given check-in/check-out
         dates.
@@ -1921,7 +1921,7 @@ paths:
     post:
       tags:
         - Booking
-      summary: invoice
+      summary: Generate Invoice
       description: >
         Generates a PDF invoice for a specified booking.  
         `bookingType` specifies which type of invoice to print:  
