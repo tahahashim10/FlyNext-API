@@ -36,6 +36,25 @@ export async function POST(request) {
             return NextResponse.json({ error: `User with email ${email} already exists` }, { status: 400 });
         }
 
+        if (phoneNumber !== undefined && phoneNumber !== null) {
+            if (typeof phoneNumber !== "string" || phoneNumber.trim() === "") {
+                return NextResponse.json({ error: "phoneNumber must be a non-empty string." }, { status: 400 });
+            }
+
+            const phoneRegex = /^\+?\d{10,15}$/;
+            if (!phoneRegex.test(phoneNumber.trim())) {
+                return NextResponse.json({ error: "phoneNumber must be a valid phone number (10 to 15 digits, optional '+' prefix)." }, { status: 400 });
+            }
+        }
+          
+        
+        if (profilePicture !== undefined && profilePicture !== null) {
+            if (typeof profilePicture !== "string" || profilePicture.trim() === "" || !isValidUrl(profilePicture)) {
+                return NextResponse.json({ error: "Profile picture must be a valid URL." }, { status: 400 });
+            }
+        }
+          
+
         // Hash the password
         const hashedPassword = await hashPassword(password);
 
@@ -68,7 +87,15 @@ export async function POST(request) {
             { status: 201 }
         );
     } catch (error) {
-        console.error("Registration error:", error);
+        console.error("Registration error:", error.stack);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
+
+
+// source: https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url
+function isValidUrl(string) {
+    const urlRegex = /^(https?:\/\/)[^\s/$.?#].[^\s]*$/i;
+    return urlRegex.test(string);
+}
+  
