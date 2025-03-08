@@ -26,6 +26,17 @@ export async function generateInvoicePDF(booking) {
     if (booking.room) {
       invoiceText += `Room: ${booking.room.name}\n`;
       invoiceText += `Price per Night: $${booking.room.pricePerNight}\n`;
+
+      // Calculate total price if checkIn and checkOut are provided.
+      if (booking.checkIn && booking.checkOut) {
+        const checkInDate = new Date(booking.checkIn);
+        const checkOutDate = new Date(booking.checkOut);
+        // Calculate the number of nights.
+        const msPerDay = 1000 * 60 * 60 * 24;
+        const days = Math.ceil((checkOutDate - checkInDate) / msPerDay);
+        const totalPrice = days * booking.room.pricePerNight;
+        invoiceText += `Total Price: $${totalPrice}\n`;
+      }
     }
     invoiceText += "\n";
   }
