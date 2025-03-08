@@ -44,6 +44,11 @@ export async function PATCH(request) {
       );
     }
 
+    const id = Number(notificationId);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "notificationId must be a valid number." }, { status: 400 });
+    }
+
     // Find the notification to update
     const notification = await prisma.notification.findUnique({
       where: { id: Number(notificationId) },
