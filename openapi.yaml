@@ -371,30 +371,145 @@ paths:
             application/json:
               schema:
                 type: object
+                properties:
+                  flightThere:
+                    type: object
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            legs:
+                              type: integer
+                            flights:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  id:
+                                    type: string
+                                  airline:
+                                    type: object
+                                    properties:
+                                      code:
+                                        type: string
+                                      name:
+                                        type: string
+                                  departureTime:
+                                    type: string
+                                    format: date-time
+                                  arrivalTime:
+                                    type: string
+                                    format: date-time
+                                  duration:
+                                    type: integer
+                                  price:
+                                    type: integer
+                            layover:
+                              type: integer
+                              nullable: true
+                  flightBack:
+                    type: object
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            legs:
+                              type: integer
+                            flights:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  id:
+                                    type: string
+                                  airline:
+                                    type: object
+                                    properties:
+                                      code:
+                                        type: string
+                                      name:
+                                        type: string
+                                  departureTime:
+                                    type: string
+                                    format: date-time
+                                  arrivalTime:
+                                    type: string
+                                    format: date-time
+                                  duration:
+                                    type: integer
+                                  price:
+                                    type: integer
+                            layover:
+                              type: integer
+                              nullable: true
               example:
                 flightThere:
                   results:
                     - legs: 1
                       flights:
-                        - departureTime: "2024-11-17T14:50:00.000Z"
+                        - id: "bd7ee4df-004d-4c95-abda-633d276a5842"
+                          airline:
+                            code: "AC"
+                            name: "Air Canada"
+                          departureTime: "2024-11-17T14:50:00.000Z"
                           arrivalTime: "2024-11-18T02:00:00.000Z"
                           duration: 670
+                          price: 1744
                     - legs: 2
                       flights:
-                        - departureTime: "2024-11-17T20:30:00.000Z"
+                        - id: "ee372818-cd33-4886-9088-d601947777a2"
+                          airline:
+                            code: "AC"
+                            name: "Air Canada"
+                          departureTime: "2024-11-17T20:30:00.000Z"
                           arrivalTime: "2024-11-18T06:20:00.000Z"
                           duration: 590
-                        - departureTime: "2024-11-18T12:40:00.000Z"
+                          price: 1765
+                        - id: "9383ba28-71a6-4493-8849-a5d0c5ae7802"
+                          airline:
+                            code: "MU"
+                            name: "China Eastern Airlines"
+                          departureTime: "2024-11-18T12:40:00.000Z"
                           arrivalTime: "2024-11-19T02:30:00.000Z"
                           duration: 830
+                          price: 1123
                       layover: 380
                 flightBack:
                   results:
                     - legs: 1
                       flights:
-                        - departureTime: "2024-11-29T18:35:00.000Z"
+                        - id: "4e987ef6-879d-481b-b474-00059d70408c"
+                          airline:
+                            code: "LX"
+                            name: "Swiss International Air Lines"
+                          departureTime: "2024-11-29T18:35:00.000Z"
                           arrivalTime: "2024-11-30T00:50:00.000Z"
                           duration: 375
+                          price: 1136
+                    - legs: 2
+                      flights:
+                        - id: "88818fe2-141e-4243-887b-aa8b12c29e39"
+                          airline:
+                            code: "LX"
+                            name: "Swiss International Air Lines"
+                          departureTime: "2024-11-29T19:20:00.000Z"
+                          arrivalTime: "2024-11-30T01:35:00.000Z"
+                          duration: 375
+                          price: 954
+                        - id: "c36e6f42-e631-4ee8-a51a-afc309e223a4"
+                          airline:
+                            code: "VN"
+                            name: "Vietnam Airlines"
+                          departureTime: "2024-11-30T18:10:00.000Z"
+                          arrivalTime: "2024-12-01T04:00:00.000Z"
+                          duration: 590
+                          price: 540
+                      layover: 995
+
   /api/flights/{id}:
     get:
       tags:
@@ -1705,11 +1820,10 @@ paths:
             schema:
               type: object
               example:
-                flightId: 3d99946b-9263-4287-850d-3bfccd78f8ca
-                hotelId: 1
+                hotelId: 18
                 destination: Zurich
                 departureCity: Toronto
-                suggestedDate: '2026-03-06'
+                suggestedDate: '2025-04-15'
       security:
         - bearerAuth: []
       responses:
@@ -1724,16 +1838,82 @@ paths:
                     type: array
                     items:
                       type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        starRating:
+                          type: integer
+                        address:
+                          type: string
+                        images:
+                          type: array
+                          items:
+                            type: string
                   searchUrl:
                     type: string
                   flights:
                     type: array
                     items:
                       type: object
+                      properties:
+                        id:
+                          type: string
+                        airline:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                            name:
+                              type: string
+                        departureTime:
+                          type: string
+                          format: date-time
+                        price:
+                          type: integer
               example:
-                hotels: []
-                searchUrl: "/search/flights?destination=New%20Example%20City%2C%20Country&keepOrder=true"
-                flights: []
+                hotels:
+                  - id: 16
+                    name: "Swiss Inn"
+                    starRating: 5
+                    address: "123 Alpine Rd"
+                    images:
+                      - "http://example.com/img1.png"
+                      - "http://example.com/img2.png"
+                  - id: 18
+                    name: "Swiss Luxury"
+                    starRating: 5
+                    address: "456 Bahnhofstrasse"
+                    images:
+                      - "http://example.com/img1.png"
+                searchUrl: "/search/flights?destination=Zurich&keepOrder=true"
+                flights:
+                  - id: "e29b88fa-551d-4bb9-b7dd-99333c860efe"
+                    airline:
+                      code: "AC"
+                      name: "Air Canada"
+                    departureTime: "2025-04-15T00:55:00.000Z"
+                    price: 1563
+                  - id: "66d9a5fd-7d2d-4491-bbc6-bdf0a15fb7a5"
+                    airline:
+                      code: "SK"
+                      name: "Scandinavian Airlines"
+                    departureTime: "2025-04-15T17:15:00.000Z"
+                    price: 1672
+                  - id: "7ae43949-9928-4466-b6ef-48959f16a43a"
+                    airline:
+                      code: "AC"
+                      name: "Air Canada"
+                    departureTime: "2025-04-15T06:20:00.000Z"
+                    price: 537
+                  - id: "447fef24-df4b-4733-a5f9-1c511b0228d3"
+                    airline:
+                      code: "B6"
+                      name: "JetBlue"
+                    departureTime: "2025-04-16T07:05:00.000Z"
+                    price: 1789
+
 
   /api/invoice:
     post:

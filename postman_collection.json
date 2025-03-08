@@ -977,7 +977,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"flightId\": \"3d99946b-9263-4287-850d-3bfccd78f8ca\",\r\n  \"hotelId\": 1,\r\n  \"destination\": \"Zurich\",\r\n  \"departureCity\": \"Toronto\",\r\n  \"suggestedDate\": \"2026-03-06\"\r\n}\r\n",
+							"raw": "{\r\n  \"hotelId\": 18,\r\n  \"destination\": \"Zurich\",\r\n  \"departureCity\": \"Toronto\",\r\n  \"suggestedDate\": \"2025-04-15\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
