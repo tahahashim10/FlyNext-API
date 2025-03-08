@@ -16,7 +16,7 @@ export async function generateInvoicePDF(booking) {
   invoiceText += `Booking Date: ${new Date(booking.createdAt).toDateString()}\n`;
   invoiceText += `Status: ${booking.status}\n\n`;
 
-  // Check if this is a hotel booking (has hotel data).
+  // Include hotel details if available.
   if (booking.hotel) {
     invoiceText += "Hotel Details:\n";
     invoiceText += `Hotel: ${booking.hotel.name}\n`;
@@ -30,15 +30,40 @@ export async function generateInvoicePDF(booking) {
     invoiceText += "\n";
   }
   
-  // If it's a flight booking or a combined booking, include flight details.
+  // Include flight booking details if available.
   if (booking.flightBookingReference) {
     invoiceText += "Flight Booking:\n";
     invoiceText += `Booking Reference: ${booking.flightBookingReference}\n`;
-    // Optionally, if you store flightIds as JSON, you can display them:
-    if (booking.flightIds) {
-      invoiceText += `Flight IDs: ${JSON.stringify(booking.flightIds)}\n`;
+    // If additional flight details were fetched, print each flight's details.
+    if (booking.flightDetails && Array.isArray(booking.flightDetails.flights)) {
+      booking.flightDetails.flights.forEach((flight, index) => {
+        invoiceText += `\n--- Flight ${index + 1} ---\n`;
+        if (flight.airline) {
+          invoiceText += `Airline: ${flight.airline.name} (${flight.airline.code})\n`;
+        }
+        if (flight.origin) {
+          invoiceText += `Origin: ${flight.origin.name}, ${flight.origin.city}\n`;
+        }
+        if (flight.destination) {
+          invoiceText += `Destination: ${flight.destination.name}, ${flight.destination.city}\n`;
+        }
+        if (flight.departureTime) {
+          invoiceText += `Departure: ${new Date(flight.departureTime).toLocaleString()}\n`;
+        }
+        if (flight.arrivalTime) {
+          invoiceText += `Arrival: ${new Date(flight.arrivalTime).toLocaleString()}\n`;
+        }
+        if (flight.price !== undefined) {
+          invoiceText += `Price: $${flight.price}\n`;
+        }
+      });
+      invoiceText += "\n";
+    } else {
+      // If no additional details, fallback to printing flight IDs.
+      if (booking.flightIds) {
+        invoiceText += `Flight IDs: ${JSON.stringify(booking.flightIds)}\n\n`;
+      }
     }
-    invoiceText += "\n";
   }
 
   invoiceText += "Thank you for booking with us!";
