@@ -305,6 +305,9 @@ export async function POST(request) {
         if (!passportNumber || typeof passportNumber !== "string" || passportNumber.trim() === "") {
           return NextResponse.json({ error: "passportNumber is required and must be a non-empty string for flight booking." }, { status: 400 });
         }
+        if (passportNumber.trim().length !== 9) {
+          return NextResponse.json({ error: "passportNumber must be exactly 9 characters long." }, { status: 400 });
+        }
       }
     }
 
