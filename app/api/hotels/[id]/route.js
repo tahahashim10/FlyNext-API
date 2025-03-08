@@ -6,8 +6,9 @@ import { verifyToken } from '@/utils/auth';
 // don't add verification token because this user story is for visitors (U13)
 export async function GET(request, { params }) {
     const { id } = await params;
-    if (!id) {
-        return NextResponse.json({ error: "Hotel ID required" }, { status: 400 });
+    // Validate that an id is provided and that it is a valid number
+    if (!id || isNaN(Number(id))) {
+      return NextResponse.json({ error: "Valid Hotel ID is required" }, { status: 400 });
     }
 
     try {
