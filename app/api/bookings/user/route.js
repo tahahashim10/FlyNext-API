@@ -354,7 +354,7 @@ export async function POST(request) {
       await prisma.notification.create({
         data: {
           userId,
-          message: `Your booking at ${hotelRecord.name} has been created. Check-in: ${checkIn || "N/A"}, Check-out: ${checkOut || "N/A"}.`,
+          message: `Your reservation at ${hotelRecord.name} (Room: ${room.name}) has been successfully created. Check-in: ${checkIn || "N/A"}, Check-out: ${checkOut || "N/A"}.`
         },
       });
       await prisma.notification.create({
@@ -409,7 +409,7 @@ export async function POST(request) {
       await prisma.notification.create({
         data: {
           userId,
-          message: `Your flight booking is pending. Please complete payment to confirm it.`,
+          message: `Your flight reservation (Reference: ${afsResponse.bookingReference}) is currently pending. Complete the payment process to secure your seat(s).`
         },
       });
     }

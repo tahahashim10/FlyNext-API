@@ -103,7 +103,7 @@ export async function POST(request) {
     await prisma.notification.create({
       data: {
         userId: booking.userId,
-        message: `Your booking (${bookingDisplayName}) has been confirmed.`,
+        message: `Congratulations! Your ${bookingType === "hotel" ? (booking.hotel ? booking.hotel.name : "hotel reservation") : "flight reservation"} has been confirmed. Please check your itinerary for full details.`,
       },
     });
 
