@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "f8e32742-e437-4b72-ba2e-d2502d6d64fc",
+		"_postman_id": "7289f4f7-9297-46cc-9b6c-8e24fab243ef",
 		"name": "CSC309 PP1",
 		"description": "This collection provides RESTful JSON endpoints for managing accounts, hotels, flights, bookings, and notifications. All protected endpoints require a valid JWT (set in the Authorization header as Bearer {{token}}). The APIs support user registration/login, hotel and room management, flight search through the AFS system, booking operations (create, checkout, cancel), and notifications. Additionally, there are additional endpoints for the locally hosted lists of cities and airports for frontend use (to come later in PP2).\n\nBelow you will find all the user stories we implemented for PP1.\n\n### **Accounts**\n\n- **U1: As a user, I want to sign up, log in, log out, and edit my profile. Profile information includes first and last name, email, profile picture, and phone number. Authentication should be handled with a proper JWT setup.**\n    \n\n---\n\n### **Flights Search**\n\n- **U2: As a visitor, I want to search for flights by specifying a source, destination, and date(s). Source and destination could be either a city or an airport. I want to search for one-way or round-trip flights.**\n    \n- **U3: As a visitor, I want to view flight details, including departure/arrival times, duration, and layovers.**\n    \n\n_(The stories about auto-complete and date picker dropdowns are UI concerns and will be implemented in Part 2.)_\n\n---\n\n### **Hotel Management**\n\n- **U6: As a user, I want to add my hotel to the platform. A hotel has name, logo, address, location, star-rating, and several images.**\n    \n- **U7: As a hotel owner, I want to define room types, with each type having a name (e.g., twin, double, etc.), amenities, prices per night, and several images.**\n    \n- **U8: As a hotel owner, I want to view and filter my hotel’s booking list by date and/or room type.**\n    \n- **U9: As a hotel owner, I want to cancel a hotel reservation, so that I have flexibility in managing my hotel.**\n    \n- **U10: As a hotel owner, I want to view room availability (per room type) for specific date ranges to better understand occupancy trends.**\n    \n- **U11: As a hotel owner, I want to update the number of available rooms of each type in my hotel. If availability decreases, it may require canceling some existing reservations.**\n    \n\n---\n\n### **Hotel Search**\n\n- **U12: As a visitor, I want to search for hotels by check-in date, check-out date, and city. I also want to filter them by name, star-rating, and price range. Search results should display in a list that shows the hotel information, starting price, and a location pinpoint on a map. The results should only reflect available rooms.**\n    \n- **U13: As a visitor, I want to view detailed hotel information, including room types, amenities, and pricing.**\n    \n- **U14: As a visitor, I want to view the availability and details of different room types for my selected dates in a selected hotel.**\n    \n\n---\n\n### **Booking**\n\n- **U15: As a user, I want to book an itinerary that includes a flight (one-way or round-trip) and/or a hotel reservation.**\n    \n- **U16: As a user, I want to a checkout page that displays all details about my itinerary (flight and/or hotel), collects my credit card information, validates the card details, and finalizes the booking if everything is correct. Note that Validation means statically checking the validity of the card number and expiry date. The card should not (and cannot) be charged for real.**\n    \n- **U17: As a user, I want to see hotel suggestions for the city if I am flying to. I also want to see flight suggestions if I am about to book a hotel stay. Both suggestions must have a link to take me to the main hotel/flight search page with pre-filled inputs, while preserving my current, in progress order.**\n    \n- **U18: As a user, I want to receive an minimal, PDF invoice for my trip booking, so that I have a record of the booking and transaction.**\n    \n- **U19: As a user, I want to view my bookings, so that I can easily access my itinerary and booking information.**\n    \n- **U20: As a user, I want to cancel all or specific parts of a booking, giving me flexibility in managing my trips.**\n    \n- **U21: As a user, I want to verify my flight booking to ensure the flight schedule remains as planned.**\n    \n\n---\n\n### **Notifications**\n\n- **U22: As a user, I want to receive notifications when I book a new itinerary, and when there are external changes to my booking (e.g., cancellation by me or hotel owner).**\n    \n- **U23: As a hotel owner, I want to receive notifications when a new booking is made for my hotel.**\n    \n\nIn each subfolder of this Postman project, the requests are organized in the same order of user stories within each section. For example, in the Hotel Management section, the first request (POST hotels) corresponds to U6.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -91,7 +91,7 @@
 					"response": []
 				},
 				{
-					"name": "users/[id]",
+					"name": "users/profile",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -122,7 +122,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/users/1",
+							"raw": "http://localhost:3000/api/users/profile",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -131,7 +131,7 @@
 							"path": [
 								"api",
 								"users",
-								"1"
+								"profile"
 							]
 						},
 						"description": "Updates the user’s profile (name, phone, picture)."
