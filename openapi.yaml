@@ -235,19 +235,12 @@ paths:
               example:
                 accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzQxMjQ4NDk3LCJleHAiOjE3NDEyNDkzOTd9.xiAp12QktbBvIV1C7h2xB_bjidvU78v6crnq2RnWOSA"
                 refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzQxMjQ4NDk3LCJleHAiOjE3NDE4NTMyOTd9.DKnNFTDG5kI12ZUDL_w79r2mZaTfsVdYBuLBfG6ygfs"
-  /api/users/{id}:
+  /api/users/profile:
     put:
       tags:
         - Accounts
       summary: Update Profile
       description: Updates the user’s profile (name, phone, picture).
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-        example: 1
       requestBody:
         content:
           application/json:
@@ -281,9 +274,11 @@ paths:
                         type: string
                       email:
                         type: string
-                      phoneNumber:
+                      password:
                         type: string
                       profilePicture:
+                        type: string
+                      phoneNumber:
                         type: string
                       role:
                         type: string
@@ -300,11 +295,13 @@ paths:
                   firstName: "Jane"
                   lastName: "Doe"
                   email: "john@example.com"
-                  phoneNumber: "0987654321"
+                  password: "$2b$10$wURfRjj9OvL.mzb3CF2lHu2o00YlfI.7gyVWeWV7adW.JhRFVLOka"
                   profilePicture: "http://example.com/newpic.jpg"
+                  phoneNumber: "0987654321"
                   role: "USER"
-                  createdAt: "2025-03-06T08:08:12.240Z"
-                  updatedAt: "2025-03-06T08:09:41.304Z"
+                  createdAt: "2025-03-08T22:17:59.853Z"
+                  updatedAt: "2025-03-08T22:18:05.649Z"
+
                   
   /api/users/refresh:
     post:
