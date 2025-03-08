@@ -27,6 +27,11 @@ export async function POST(request) {
       return NextResponse.json({ error: "Forbidden: You are not authorized to access this booking." }, { status: 403 });
     }
 
+    // make sure the booking is confirmed (payed and finalized) before generating an invoice.
+    if (booking.status !== "CONFIRMED") {
+      return NextResponse.json({ error: "Invoice can only be generated for confirmed/payed bookings." }, { status: 400 });
+    }
+
     // For flight bookings, fetch additional details from the AFS API.
     if (bookingType === "flight" && booking.flightBookingReference) {
       const baseUrl = process.env.AFS_BASE_URL;
