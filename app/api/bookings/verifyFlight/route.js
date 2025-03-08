@@ -15,12 +15,11 @@ export async function GET(request) {
     const lastName = searchParams.get("lastName");
     const bookingReference = searchParams.get("bookingReference");
 
-    if (!lastName || !bookingReference) {
-      return NextResponse.json(
-        { error: "Missing lastName or bookingReference query parameters" },
-        { status: 400 }
-      );
+    if (!lastName || typeof lastName !== "string" || lastName.trim() === "" ||
+        !bookingReference || typeof bookingReference !== "string" || bookingReference.trim() === "") {
+      return NextResponse.json({ error: "Missing or invalid lastName or bookingReference query parameters" }, { status: 400 });
     }
+
 
     // Get the AFS configuration from the environment
     const baseUrl = process.env.AFS_BASE_URL;
