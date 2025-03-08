@@ -4,7 +4,6 @@ import { generateInvoicePDF } from "@/utils/pdfGenerator";
 import { verifyToken } from "@/utils/auth";
 
 export async function POST(request) {
-
   // Verify token
   const tokenData = verifyToken(request);
   if (!tokenData) {
@@ -12,14 +11,19 @@ export async function POST(request) {
   }
 
   try {
+    const { bookingId, bookingType } = await request.json();
 
-
-    const { bookingId } = await request.json();
     if (!bookingId || isNaN(bookingId)) {
       return NextResponse.json({ error: "bookingId must be a number" }, { status: 400 });
     }
+    if (!bookingType || !["hotel", "flight"].includes(bookingType)) {
+      return NextResponse.json(
+        { error: "bookingType is required and must be either 'hotel' or 'flight'" },
+        { status: 400 }
+      );
+    }
 
-    const booking = await getBookingDetails(bookingId);
+    const booking = await getBookingDetails(bookingId, bookingType);
     if (!booking) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });
     }
@@ -40,6 +44,6 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error("Invoice Error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 }
