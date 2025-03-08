@@ -12,9 +12,11 @@ export async function POST(request) {
   }
 
   try {
+
+
     const { bookingId } = await request.json();
-    if (!bookingId) {
-      return NextResponse.json({ error: "Missing bookingId" }, { status: 400 });
+    if (!bookingId || isNaN(bookingId)) {
+      return NextResponse.json({ error: "bookingId must be a number" }, { status: 400 });
     }
 
     const booking = await getBookingDetails(bookingId);
